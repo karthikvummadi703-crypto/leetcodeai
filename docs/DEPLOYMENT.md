@@ -41,10 +41,16 @@ the recommended production setup: **Railway (backend)** + **Firebase Hosting
 
 2. In Railway, **New Project → Deploy from GitHub repo**, then set:
 
-   - **Root directory**: `backend`
-   - **Build command**: `pip install -r requirements.txt`
-   - **Start command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-     (Railway injects `PORT` automatically).
+   - **Root directory**: `backend` — required, otherwise Railpack builds the
+     wrong app (the repo root contains a `package.json` and will be detected
+     as Node). In Railway it lives at **Settings → Source → Root Directory**.
+   - Build/start commands are **automatic**: `railway.json` is committed at
+     the **repo root** (Railway only auto-detects the config file at the root
+     — it does not follow the Root Directory path) and tells Railpack to run
+     `uvicorn main:app --host 0.0.0.0 --port $PORT` with a `/api/health`
+     healthcheck. (If you prefer, set them manually instead:
+     Build `pip install -r requirements.txt`,
+     Start `uvicorn main:app --host 0.0.0.0 --port $PORT`.)
 
 3. Add these environment variables in the Railway dashboard
    (**Variables**):
@@ -116,29 +122,36 @@ the recommended production setup: **Railway (backend)** + **Firebase Hosting
    VITE_FIREBASE_APP_ID=...
    ```
 
-3. Initialize and deploy hosting from the `frontend/` directory:
-
-   ```bash
-   cd frontend
-   firebase init hosting    # select the project, public dir = dist, SPA = yes
-   firebase deploy --only hosting
-   ```
-
-   `firebase init hosting` creates a `firebase.json` and `public/`. Use this
-   `firebase.json` so it serves the built SPA with a rewrite (client-side
-   routes `/chat`, `/settings` must load `index.html`):
+3. Deploy hosting and Firestore together from the **repo root**. A
+   `firebase.json` already exists at the root that serves the built SPA from
+   `frontend/dist` with a rewrite (client-side routes `/chat`, `/settings`
+   must load `index.html`) and points Firestore at the rules/index files in
+   `firebase/`:
 
    ```json
    {
      "hosting": {
-       "public": "dist",
+       "public": "frontend/dist",
        "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
        "rewrites": [{ "source": "**", "destination": "/index.html" }]
+     },
+     "firestore": {
+       "rules": "firebase/firestore.rules",
+       "indexes": "firebase/firestore.indexes.json"
      }
    }
    ```
 
-   Delete the generated `public/index.html` and keep building into `dist`.
+   You do **not** need `firebase init hosting` — the file is already
+   configured. Just log in and deploy:
+
+   ```bash
+   firebase login
+   firebase deploy
+   ```
+
+   On the first run it asks which project to use (select your Firebase
+   project) and deploys both hosting and Firestore rules/indexes.
 
 4. Make sure the Railway `FRONTEND_URL` matches the deployed Firebase Hosting
    URLs exactly (scheme + host, no trailing slash).
