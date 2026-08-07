@@ -1,0 +1,20 @@
+{
+  "name": "Binary Search Pattern",
+  "category": "Search",
+  "description": "Binary search repeatedly halves the search space by comparing the middle element against the target. It only works on sorted (or monotonic) sequences, but the 'predicate binary search' variant applies it to any monotonic boolean function.",
+  "how_to_identify": "Sorted input, or a question that can be reframed as 'is a candidate answer valid?' with a monotonic true/false sequence.",
+  "use_cases": [
+    "Searching a sorted array",
+    "Finding first/last occurrence of a value",
+    "Searching a rotated sorted array",
+    "Finding the smallest divisor given a threshold"
+  ],
+  "template": "while lo < hi: mid = lo + (hi - lo) // 2; if predicate(mid): hi = mid (or lo = mid + 1); else adjust the other bound. Pick lo vs hi loop carefully to avoid infinite loops.",
+  "time_complexity": "O(log N)",
+  "space_complexity": "O(1)",
+  "common_mistakes": [
+    "Off-by-one errors causing infinite loops or skipped elements.",
+    "Applying it to unsorted data without sorting first."
+  ],
+  "related_problems": ["Binary Search", "Search in Rotated Sorted Array", "Koko Eating Bananas", "Find Minimum in Rotated Sorted Array"]
+}

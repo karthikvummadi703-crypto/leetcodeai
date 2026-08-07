@@ -1,0 +1,20 @@
+{
+  "name": "Backtracking",
+  "category": "Recursion / Search",
+  "description": "Backtracking is a systematic way to iterate through all possible configurations of a search space. It builds candidates incrementally and abandons ('prunes') a partial candidate as soon as it cannot possibly lead to a valid solution.",
+  "how_to_identify": "Problems that enumerate all combinations, permutations, or subsets, or that build solutions incrementally where early decisions limit later ones.",
+  "use_cases": [
+    "Generating all subsets, permutations, and combinations",
+    "N-Queens and Sudoku solver",
+    "Word search in a grid",
+    "Letter combinations of a phone number"
+  ],
+  "template": "A recursive function that, at each step, chooses a candidate, recurses, then 'undoes' the choice (backtrack). Optionally sort and skip duplicates and add pruning conditions to cut the search tree.",
+  "time_complexity": "Often exponential, e.g. O(n ⋅ n!) for permutations",
+  "space_complexity": "O(N) recursion depth plus O(N) for the current path",
+  "common_mistakes": [
+    "Forgetting to undo a choice after recursion, polluting later branches.",
+    "Not skipping duplicate values after sorting, generating duplicate answers."
+  ],
+  "related_problems": ["Subsets", "Permutations", "Combination Sum", "Letter Combinations of a Phone Number"]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "Dynamic Programming",
+  "category": "Optimization",
+  "description": "Dynamic programming (DP) solves problems by breaking them into overlapping subproblems, solving each once, and storing the results. It is ideal for optimization problems with optimal substructure and overlapping subproblems.",
+  "how_to_identify": "The problem asks for the count / maximum / minimum / best way and can be decomposed into smaller versions of itself with overlapping states.",
+  "use_cases": [
+    "Fibonacci and similar recurrences",
+    "0/1 Knapsack and coin change",
+    "Longest increasing subsequence",
+    "Unique paths in a grid"
+  ],
+  "template": "Define the state (what describes a subproblem). Write a recurrence connecting larger states to smaller ones. Choose filling order top-down (memoized recursion) or bottom-up (tabular).",
+  "time_complexity": "Number of states × cost to compute each state",
+  "space_complexity": "Depends on the number of states; often reducible to O(1) or O(N) via rolling arrays",
+  "common_mistakes": [
+    "Writing the recurrence without a clear base case.",
+    "Confusing greedy with DP when a local choice is not globally optimal.",
+    "Missing the memoization step, leaving exponential time."
+  ],
+  "related_problems": ["Climbing Stairs", "Coin Change", "Longest Increasing Subsequence", "House Robber"]
+}

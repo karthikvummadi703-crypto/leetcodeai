@@ -1,0 +1,24 @@
+{
+  "name": "Advanced Algorithms Roadmap",
+  "difficulty_level": "Advanced",
+  "description": "For engineers targeting top-tier interviews or competitions. Covers advanced DP, graph algorithms, and hard problem patterns.",
+  "milestones": [
+    "Advanced dynamic programming — knapsack, LIS, interval DP.",
+    "Graph algorithms — topological sort, union-find, MST, shortest paths.",
+    "Segment trees and Fenwick trees for range queries.",
+    "Tries and string algorithms.",
+    "Bit manipulation and bitmask DP.",
+    "Hard two-pointer, sliding window, and monotonic stack problems."
+  ],
+  "recommended_problems": ["Longest Increasing Subsequence", "Network Delay Time", "Range Sum Query - Mutable", "Alien Dictionary", "Split Array Largest Sum"],
+  "study_plan": [
+    "Week 1-2: advanced DP (10-15 problems).",
+    "Week 3: advanced graphs — MST, union-find, Dijkstra variants.",
+    "Week 4: trees/tries and range-query data structures.",
+    "Week 5-6: hard mixed problems and timed contests."
+  ],
+  "tips": [
+    "Master a few advanced data structures deeply before broadening.",
+    "Re-implement each algorithm from memory to build muscle memory."
+  ]
+}

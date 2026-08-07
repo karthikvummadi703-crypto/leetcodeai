@@ -1,0 +1,25 @@
+{
+  "name": "Beginner DSA Roadmap",
+  "difficulty_level": "Beginner",
+  "description": "A guided path for engineers new to data structures and algorithms. Focus on fundamentals and building intuition with easy problems before touching advanced topics.",
+  "milestones": [
+    "Arrays and strings basics — prefix sums, two pointers.",
+    "Hash tables — membership checks, frequency counting.",
+    "Sorting fundamentals — understand merge sort and quick sort.",
+    "Binary search on sorted arrays.",
+    "Recursion and simple recursion trees.",
+    "Stacks and queues — parentheses and monotonic stacks.",
+    "Basic tree traversal — inorder, preorder, postorder, level-order."
+  ],
+  "recommended_problems": ["Two Sum", "Valid Parentheses", "Best Time to Buy and Sell Stock", "Binary Search", "Invert Binary Tree"],
+  "study_plan": [
+    "Week 1-2: arrays, strings, hash tables (10-15 easy problems).",
+    "Week 3: sorting and binary search (8-10 problems).",
+    "Week 4-5: recursion, stacks, queues (8-10 problems).",
+    "Week 6: trees (8-10 problems) and review your solved set."
+  ],
+  "tips": [
+    "Spend 20-30 minutes thinking before peeking at solutions.",
+    "Re-solve problems after a few days to cement intuition."
+  ]
+}

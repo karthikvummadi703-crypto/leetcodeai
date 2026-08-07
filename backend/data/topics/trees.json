@@ -1,0 +1,18 @@
+{
+  "name": "Trees",
+  "category": "Data Structure",
+  "description": "A tree is a hierarchical structure with a root and child nodes. Binary trees have at most two children per node; binary search trees (BST) keep left < node < right, enabling O(log N) average search. Trees are ideal for recursive and divide-and-conquer solutions.",
+  "key_points": [
+    "Traversals: inorder, preorder, postorder, and level-order (BFS).",
+    "Inorder traversal of a BST yields sorted output.",
+    "Height of a balanced tree is O(log N), of a skewed tree O(N).",
+    "Many tree problems are naturally recursive: solve left, solve right, combine."
+  ],
+  "how_to_identify": "'Binary tree', 'BST', 'ancestor', 'height', 'diameter', 'level order'.",
+  "related_patterns": ["BFS / DFS Graph Traversal", "Backtracking"],
+  "example_problems": ["Maximum Depth of Binary Tree", "Validate Binary Search Tree", "Lowest Common Ancestor", "Serialize and Deserialize Binary Tree"],
+  "common_mistakes": [
+    "Not handling the null node base case in recursion.",
+    "Confusing left/right subtree results and losing them before combining."
+  ]
+}

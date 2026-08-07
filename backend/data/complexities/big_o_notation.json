@@ -1,0 +1,23 @@
+{
+  "name": "Big-O Notation",
+  "notation": "O(N)",
+  "description": "Big-O notation describes how an algorithm's runtime or memory usage grows as the input size N increases, focusing on the dominant term and ignoring constant factors. It lets us compare algorithms independently of hardware and input specifics.",
+  "examples": [
+    "O(1) — constant: hash table lookup, array index access.",
+    "O(log N) — logarithmic: binary search.",
+    "O(N) — linear: single pass over an array.",
+    "O(N log N) — linearithmic: merge sort, heap sort.",
+    "O(N^2) — quadratic: nested loops.",
+    "O(2^N) — exponential: naive subsets/permutations."
+  ],
+  "comparison": "O(1) < O(log N) < O(N) < O(N log N) < O(N^2) < O(2^N) < O(N!)",
+  "tips": [
+    "Drop constants and lower-order terms: 3N + 20 is O(N).",
+    "Different loops add, nested loops multiply.",
+    "Two-pointer / sliding window often reduce O(N^2) to O(N)."
+  ],
+  "common_mistakes": [
+    "Counting N as both input size and something else.",
+    "Treating the best case as the worst case when asked for Big-O."
+  ]
+}

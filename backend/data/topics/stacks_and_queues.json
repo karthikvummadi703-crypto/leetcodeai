@@ -1,0 +1,18 @@
+{
+  "name": "Stacks and Queues",
+  "category": "Data Structure",
+  "description": "Stacks are LIFO structures supporting push and pop at one end in O(1). Queues are FIFO structures supporting enqueue at the back and dequeue at the front in O(1). Both underpin many algorithms: expression evaluation, parentheses matching, BFS, and monotonic subarray queries.",
+  "key_points": [
+    "Stack: last-in, first-out; natural for nesting and undo behavior.",
+    "Queue: first-in, first-out; the basis of BFS.",
+    "Deque (double-ended queue) supports O(1) operations at both ends.",
+    "Monotonic stacks/queues maintain a running extreme to solve 'next greater/smaller' and sliding window maxima in O(N)."
+  ],
+  "how_to_identify": "'Parentheses', 'next greater element', 'sliding window maximum', 'undo/reverse order'.",
+  "related_patterns": ["Stack", "Sliding Window", "Monotonic Stack"],
+  "example_problems": ["Valid Parentheses", "Daily Temperatures", "Sliding Window Maximum", "Min Stack"],
+  "common_mistakes": [
+    "Popping from an empty stack without checking size.",
+    "Forgetting monotonic invariants when values equal to the top."
+  ]
+}

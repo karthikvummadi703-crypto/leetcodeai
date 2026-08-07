@@ -1,0 +1,21 @@
+{
+  "number": 20,
+  "title": "Valid Parentheses",
+  "difficulty": "Easy",
+  "tags": ["String", "Stack"],
+  "pattern": "Stack",
+  "algorithm": "Stack",
+  "description": "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid. An input string is valid if open brackets are closed by the same type of bracket, open brackets are closed in the correct order, and every close bracket has a corresponding open bracket of the same type.",
+  "hints": [
+    "Every closing bracket must match the most recently opened, unmatched bracket.",
+    "A stack naturally captures the 'last-in, first-out' nature of nested parentheses."
+  ],
+  "solution_approach": "Push each opening bracket onto a stack. On a closing bracket, pop the top of the stack and compare it to the expected opening bracket; if they mismatch (or the stack is empty) the string is invalid. At the end the stack must be empty.",
+  "time_complexity": "O(N)",
+  "space_complexity": "O(N)",
+  "common_mistakes": [
+    "Forgetting to check the stack is empty at the end (e.g. '([]' has an unmatched '(').",
+    "Only counting occurrences instead of matching nested order."
+  ],
+  "similar_problems": ["Generate Parentheses", "Longest Valid Parentheses", "Minimum Remove to Make Valid Parentheses"]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "Topological Sort",
+  "category": "Graph",
+  "description": "Topological sort orders the vertices of a directed acyclic graph (DAG) so that for every directed edge u → v, u comes before v. It is used wherever there are dependencies: course prerequisites, build systems, and task scheduling.",
+  "approach": "Kahn's algorithm: compute in-degrees, enqueue all zero-in-degree nodes, repeatedly dequeue, append to order, and decrement in-degrees of neighbors, enqueuing any that hit zero. If the output has fewer nodes than V, a cycle exists. DFS-based: mark visited and append nodes in post-order, then reverse.",
+  "time_complexity": "O(V + E)",
+  "space_complexity": "O(V)",
+  "use_cases": [
+    "Course schedule feasibility.",
+    "Determining build order of tasks with prerequisites.",
+    "Detecting cycles in directed graphs."
+  ],
+  "common_mistakes": [
+    "Forgetting to detect that a cycle means no valid topological order exists.",
+    "Using the DFS post-order list without reversing it."
+  ],
+  "related_problems": ["Course Schedule", "Course Schedule II", "Alien Dictionary"]
+}

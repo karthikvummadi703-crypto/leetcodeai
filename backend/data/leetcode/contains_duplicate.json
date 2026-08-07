@@ -1,0 +1,21 @@
+{
+  "number": 217,
+  "title": "Contains Duplicate",
+  "difficulty": "Easy",
+  "tags": ["Array", "Hash Table", "Sorting"],
+  "pattern": "Hash Map Lookup",
+  "algorithm": "Hash Set",
+  "description": "Given an integer array nums, return true if any value appears at least twice in the array, and return false if every element is distinct.",
+  "hints": [
+    "A hash set gives you O(1) membership checks.",
+    "As you scan, if an element is already in the set, you've found a duplicate."
+  ],
+  "solution_approach": "Insert each element into a hash set. If the element is already present before inserting, return true. After the loop, return false. An alternative is to sort and check adjacent equals.",
+  "time_complexity": "O(N) with a set, or O(N log N) with sorting",
+  "space_complexity": "O(N) for the set, O(1) for sorting",
+  "common_mistakes": [
+    "Counting frequencies when a simple existence check is enough.",
+    "Forgetting to return after the first duplicate is found."
+  ],
+  "similar_problems": ["Contains Duplicate II", "Contains Duplicate III", "Single Number"]
+}

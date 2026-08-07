@@ -1,0 +1,28 @@
+{
+  "name": "Interview Prep Roadmap",
+  "difficulty_level": "Intermediate",
+  "description": "A structured plan targeting coding interviews. Covers the core patterns interviewers love and how to communicate your reasoning clearly while solving.",
+  "milestones": [
+    "Sliding window problems for substring and subarray questions.",
+    "Two pointers for sorted arrays and in-place manipulation.",
+    "Fast and slow pointers for cycles and linked list structure.",
+    "Backtracking for combinations, permutations, and subsets.",
+    "Dynamic programming — 1D and 2D states, optimization.",
+    "Graph traversal — BFS, DFS, topological sort, Dijkstra.",
+    "Heaps for top-k problems.",
+    "Mock interviews with a timer and narrated thinking."
+  ],
+  "recommended_problems": ["Longest Substring Without Repeating Characters", "Course Schedule", "Coin Change", "Kth Largest Element in an Array", "Sliding Window Maximum"],
+  "study_plan": [
+    "Week 1: sliding window + two pointers.",
+    "Week 2: backtracking + recursion patterns.",
+    "Week 3: dynamic programming fundamentals.",
+    "Week 4: graphs and heaps.",
+    "Week 5-6: mixed mock interviews, timing every session."
+  ],
+  "tips": [
+    "Narrate your thought process — interviewers grade communication.",
+    "Always state time and space complexity before writing code.",
+    "Brush up on at least one language's built-in data structures."
+  ]
+}

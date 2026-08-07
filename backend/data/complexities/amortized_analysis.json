@@ -1,0 +1,19 @@
+{
+  "name": "Amortized Analysis",
+  "description": "Amortized analysis averages the cost of a sequence of operations over the entire sequence, showing that even if some individual operations are expensive, the average cost per operation is low. It explains why a dynamic array append is 'O(1) amortized' despite occasional O(N) re-sizes.",
+  "key_points": [
+    "Amortized ≠ average-case over inputs; it is a worst-case bound over a sequence.",
+    "Dynamic arrays double their capacity; N appends cost O(N) total → O(1) each.",
+    "Hash tables rehash at a load factor; insertions are O(1) amortized.",
+    "std::vector / Python list growth is the canonical example."
+  ],
+  "examples": [
+    "Append to a resizable array — O(1) amortized",
+    "Incrementing a binary counter — O(1) amortized",
+    "Union-Find with path compression + union by rank — near O(1) amortized"
+  ],
+  "common_mistakes": [
+    "Saying an operation is always O(1) when it is only amortized O(1).",
+    "Confusing amortized analysis with average-case analysis."
+  ]
+}

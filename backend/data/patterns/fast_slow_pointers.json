@@ -1,0 +1,20 @@
+{
+  "name": "Fast and Slow Pointers",
+  "category": "Linked List",
+  "description": "Also known as Floyd's cycle detection, this pattern uses two pointers moving at different speeds. The fast pointer moves two steps, the slow pointer moves one. If there is a cycle, they will eventually meet inside the cycle.",
+  "how_to_identify": "Problems about cycles, the middle of a linked list, or detecting loops without extra space.",
+  "use_cases": [
+    "Detecting a cycle in a linked list",
+    "Finding the middle node of a linked list",
+    "Finding the start of a cycle",
+    "Sorting a cycle-linked list"
+  ],
+  "template": "Initialize slow = head, fast = head. Advance fast by two and slow by one. If fast reaches None there is no cycle; if they meet, a cycle exists. To find the cycle start, reset one pointer to head and advance both one step.",
+  "time_complexity": "O(N)",
+  "space_complexity": "O(1)",
+  "common_mistakes": [
+    "Forgetting to guard against fast.next being None before advancing two steps.",
+    "Using a hash set of visited nodes instead of constant space."
+  ],
+  "related_problems": ["Linked List Cycle", "Linked List Cycle II", "Find the Duplicate Number", "Happy Number"]
+}

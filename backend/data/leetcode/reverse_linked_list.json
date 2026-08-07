@@ -1,0 +1,21 @@
+{
+  "number": 206,
+  "title": "Reverse Linked List",
+  "difficulty": "Easy",
+  "tags": ["Linked List", "Recursion"],
+  "pattern": "Pointer Manipulation",
+  "algorithm": "Iterative Reverse",
+  "description": "Given the head of a singly linked list, reverse the list and return its new head.",
+  "hints": [
+    "Walk the list and repeatedly flip the current node's next pointer to point at the previous node.",
+    "Keep three references: prev, current, next."
+  ],
+  "solution_approach": "Initialize prev = None, curr = head. While curr is not None, save curr.next, set curr.next = prev, advance prev = curr, curr = saved next. After the loop prev is the new head.",
+  "time_complexity": "O(N)",
+  "space_complexity": "O(1) iterative, O(N) recursion",
+  "common_mistakes": [
+    "Losing the reference to the next node before rewiring curr.next.",
+    "Returning the old head instead of the new head."
+  ],
+  "similar_problems": ["Reverse Linked List II", "Palindrome Linked List", "Swap Nodes in Pairs"]
+}

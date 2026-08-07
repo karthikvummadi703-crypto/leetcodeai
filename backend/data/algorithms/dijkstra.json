@@ -1,0 +1,18 @@
+{
+  "name": "Dijkstra's Shortest Path",
+  "category": "Graph",
+  "description": "Dijkstra's algorithm finds the shortest path from a source vertex to all other vertices in a weighted graph with non-negative edge weights. It greedily expands the closest unvisited vertex, updating tentative distances to its neighbors.",
+  "approach": "Initialize all distances to infinity except the source (0). Use a min-heap keyed by distance. Pop the smallest, and for each neighbor relax: if dist + weight < neighbor_dist, update and push. Stop early if only a target is needed.",
+  "time_complexity": "O((V + E) log V) with a binary heap",
+  "space_complexity": "O(V)",
+  "use_cases": [
+    "Shortest path in maps / networks.",
+    "Network delay time, cheapest flights.",
+    "Single-source shortest paths with non-negative weights."
+  ],
+  "common_mistakes": [
+    "Applying Dijkstra with negative edge weights (use Bellman-Ford).",
+    "Skipping stale heap entries by not checking visited/distance before relaxing."
+  ],
+  "related_problems": ["Network Delay Time", "Path with Maximum Probability", "Cheapest Flights Within K Stops"]
+}

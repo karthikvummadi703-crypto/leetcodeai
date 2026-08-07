@@ -1,0 +1,18 @@
+{
+  "name": "Linked Lists",
+  "category": "Data Structure",
+  "description": "A linked list is a sequence of nodes where each node stores a value and a pointer to the next node (and optionally the previous node for doubly linked lists). Unlike arrays, insertion and deletion are O(1) once you have the node, but random access is O(N).",
+  "key_points": [
+    "No random access — reaching the k-th node costs O(N).",
+    "Insert/delete at a known position is O(1) with careful pointer updates.",
+    "Common techniques: dummy head, fast/slow pointers, reversing in-place.",
+    "Beware of null pointer access when rewiring next pointers."
+  ],
+  "how_to_identify": "Words like 'linked list', 'node', 'next pointer', 'merge/sort/reverse a list'.",
+  "related_patterns": ["Fast and Slow Pointers", "Two Pointers"],
+  "example_problems": ["Reverse Linked List", "Merge Two Sorted Lists", "Linked List Cycle", "Reorder List"],
+  "common_mistakes": [
+    "Losing the next pointer before re-linking a node.",
+    "Returning the wrong node (tail instead of head, or an old head)."
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "Hash Tables",
+  "category": "Data Structure",
+  "description": "A hash table (hash map) stores key-value pairs and provides average O(1) time for insert, delete, and lookup by hashing keys into array buckets. Python's dict and set, Java's HashMap, and C++'s unordered_map are built-in hash tables.",
+  "key_points": [
+    "O(1) average operations, O(N) worst case if many collisions occur.",
+    "Perfect for tracking frequencies, counts, or the 'seen so far' history.",
+    "Space cost is O(N) — trade space for time.",
+    "Keys must be hashable; order is not guaranteed in a map."
+  ],
+  "how_to_identify": "Need fast membership tests, counts, or a mapping between two values.",
+  "related_patterns": ["Hash Map Lookup", "Sliding Window", "Two Pointers"],
+  "example_problems": ["Two Sum", "Group Anagrams", "Top K Frequent Elements", "Valid Anagram"],
+  "common_mistakes": [
+    "Using a list for membership tests giving O(N) lookups.",
+    "Not considering that two different keys can hash to the same bucket."
+  ]
+}

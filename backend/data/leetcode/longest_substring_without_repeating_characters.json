@@ -1,0 +1,21 @@
+{
+  "number": 3,
+  "title": "Longest Substring Without Repeating Characters",
+  "difficulty": "Medium",
+  "tags": ["String", "Hash Table", "Sliding Window"],
+  "pattern": "Sliding Window",
+  "algorithm": "Two Pointers",
+  "description": "Given a string s, find the length of the longest substring without repeating characters.",
+  "hints": [
+    "Expand a window until you see a duplicate, then shrink from the left until the duplicate is gone.",
+    "Track character → most recent index in a hash map to know how far to jump the window's left edge."
+  ],
+  "solution_approach": "Maintain two pointers (left, right) and a frequency map. Expand right, and whenever a character repeats, move left forward until the window has all unique characters. Track the maximum window size.",
+  "time_complexity": "O(N)",
+  "space_complexity": "O(min(N, alphabet))",
+  "common_mistakes": [
+    "Not advancing the left pointer enough when a character repeats.",
+    "Confusing substring (contiguous) with subsequence (order-preserving, not contiguous)."
+  ],
+  "similar_problems": ["Longest Substring with At Most K Distinct Characters", "Minimum Window Substring", "Longest Repeating Character Replacement"]
+}

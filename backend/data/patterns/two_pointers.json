@@ -1,0 +1,20 @@
+{
+  "name": "Two Pointers",
+  "category": "Array / Linked List",
+  "description": "Two pointers involve iterating through a data structure with two references that move toward each other or in the same direction. This reduces time complexity from O(N^2) to O(N) for many sorted-array problems.",
+  "how_to_identify": "Sorted array, pair-sum problems, or problems about partitions where a brute-force nested loop feels too slow.",
+  "use_cases": [
+    "Two Sum II - Input Array Is Sorted",
+    "Container With Most Water",
+    "Trapping Rain Water",
+    "Removing duplicates in-place"
+  ],
+  "template": "Place one pointer at the start and one at the end. Move the pointer that advances toward the solution based on the current values. For in-place problems, keep a slow writer pointer and a fast reader pointer.",
+  "time_complexity": "O(N)",
+  "space_complexity": "O(1)",
+  "common_mistakes": [
+    "Moving both pointers when only one should move.",
+    "Using two pointers on unsorted data where a hash map is required."
+  ],
+  "related_problems": ["Valid Palindrome", "3Sum", "Move Zeroes"]
+}

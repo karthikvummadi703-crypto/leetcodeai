@@ -1,0 +1,19 @@
+{
+  "name": "Sliding Window",
+  "category": "Array / String",
+  "description": "The sliding window pattern is used when you need to find some subarray or substring satisfying certain constraints, such as a maximum or minimum length. Instead of recomputing from scratch, you maintain a window defined by two pointers and slide it across the input, adding and removing elements at the edges.",
+  "how_to_identify": "Look for 'subarray' or 'substring' that meets a condition, or fixed/maximum/minimum length over a contiguous range.",
+  "use_cases": [
+    "Longest substring with at most K distinct characters",
+    "Maximum sum of a subarray of size K",
+    "Minimum window containing all characters of a target string"
+  ],
+  "template": "Expand right pointer; while window is invalid, shrink from the left; update the answer after adjusting the window.",
+  "time_complexity": "O(N) — each element enters and leaves the window at most once",
+  "space_complexity": "O(1) or O(alphabet) depending on what you track",
+  "common_mistakes": [
+    "Confusing fixed-size windows with variable-size (shrinkable) windows.",
+    "Forgetting to update the answer at the correct point in the loop."
+  ],
+  "related_problems": ["Longest Substring Without Repeating Characters", "Minimum Window Substring", "Permutation in String"]
+}

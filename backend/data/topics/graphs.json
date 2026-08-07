@@ -1,0 +1,18 @@
+{
+  "name": "Graphs",
+  "category": "Data Structure",
+  "description": "A graph is a set of vertices connected by edges, which may be directed or undirected and weighted or unweighted. Graphs model networks, dependencies, and relationships. Traversal, shortest paths, and connectivity are the core problems.",
+  "key_points": [
+    "Representations: adjacency list (space O(V+E)) and adjacency matrix (space O(V^2)).",
+    "BFS finds shortest paths in unweighted graphs; Dijkstra for weighted non-negative.",
+    "DFS can detect cycles and produce topological orders on DAGs.",
+    "Union-Find handles dynamic connectivity efficiently."
+  ],
+  "how_to_identify": "'Vertices', 'edges', 'connected components', 'shortest path', 'topological order'.",
+  "related_patterns": ["BFS / DFS Graph Traversal", "Dynamic Programming"],
+  "example_problems": ["Number of Islands", "Course Schedule", "Network Delay Time", "Clone Graph"],
+  "common_mistakes": [
+    "Forgetting the visited set, causing infinite loops on cycles.",
+    "Using BFS on a weighted graph where Dijkstra is required."
+  ]
+}

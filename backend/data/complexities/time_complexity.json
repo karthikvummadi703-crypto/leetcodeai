@@ -1,0 +1,20 @@
+{
+  "name": "Time Complexity",
+  "description": "Time complexity measures how the number of operations an algorithm performs grows with input size N. It is the most common metric for interview analysis and predicts runtime scaling, not exact wall-clock time.",
+  "key_points": [
+    "Analyze the worst case by default unless told otherwise.",
+    "Count dominant operations: comparisons, array accesses, recursive calls.",
+    "A loop running N times is O(N); nested loops of size N are O(N^2); halving each step is O(log N).",
+    "Recursive algorithms: use a recurrence (e.g. T(N) = 2T(N/2) + O(N) → O(N log N))."
+  ],
+  "examples": [
+    "Single pass — O(N)",
+    "Binary search / balanced tree ops — O(log N)",
+    "Merge sort, quicksort average — O(N log N)",
+    "Graph traversal — O(V + E)"
+  ],
+  "common_mistakes": [
+    "Ignoring that string concatenation in a loop can add a hidden O(N^2).",
+    "Confusing amortized bounds (e.g. dynamic array append O(1) amortized) with strict bounds."
+  ]
+}

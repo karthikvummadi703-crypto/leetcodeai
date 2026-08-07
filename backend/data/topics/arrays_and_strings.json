@@ -1,0 +1,18 @@
+{
+  "name": "Arrays and Strings",
+  "category": "Data Structure",
+  "description": "Arrays store elements in contiguous memory and support O(1) random access by index. Strings are arrays of characters with the added constraint of immutability in many languages. Many interview problems reduce to clever array manipulation.",
+  "key_points": [
+    "O(1) access by index, O(N) insertion/deletion in the middle.",
+    "In-place algorithms (two pointers, reversal, partition) use O(1) extra space.",
+    "Sorting an array costs O(N log N) and is often a useful preprocessing step.",
+    "Prefix sums convert range-sum queries into O(1) after O(N) precomputation."
+  ],
+  "how_to_identify": "Subarray sums, in-place manipulation, rotations, or grid traversal.",
+  "related_patterns": ["Two Pointers", "Sliding Window", "Prefix Sum"],
+  "example_problems": ["Two Sum", "Maximum Subarray", "Product of Array Except Self", "Rotate Array"],
+  "common_mistakes": [
+    "Forgetting bounds checks when working with adjacent indices.",
+    "Using nested loops that turn an O(N) problem into O(N^2)."
+  ]
+}

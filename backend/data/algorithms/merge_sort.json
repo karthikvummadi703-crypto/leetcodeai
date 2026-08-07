@@ -1,0 +1,18 @@
+{
+  "name": "Merge Sort",
+  "category": "Sorting",
+  "description": "Merge sort is a divide-and-conquer algorithm. It recursively splits the array in half until subarrays have one element, then merges sorted halves back together. It is stable and guarantees O(N log N) in all cases.",
+  "approach": "Split the array at the midpoint. Recursively sort each half. Merge the two sorted halves by repeatedly taking the smaller front element into an auxiliary array.",
+  "time_complexity": "O(N log N)",
+  "space_complexity": "O(N) for the auxiliary merge buffer",
+  "use_cases": [
+    "Stable sorting of linked lists (works without random access).",
+    "Counting inversions in an array.",
+    "External sorting where data does not fit in memory."
+  ],
+  "common_mistakes": [
+    "Forgetting to copy remaining elements from one half during the merge.",
+    "Using O(N) space per recursion frame rather than a single shared buffer."
+  ],
+  "related_problems": ["Sort an Array", "Reverse Pairs", "Count of Smaller Numbers After Self"]
+}

@@ -1,0 +1,20 @@
+{
+  "name": "Space Complexity",
+  "description": "Space complexity measures the extra memory an algorithm uses beyond the input, as a function of input size N. It includes auxiliary data structures, recursion call stacks, and output storage depending on the question's framing.",
+  "key_points": [
+    "Auxiliary space: hash maps, arrays, sets created by the algorithm.",
+    "Recursion depth contributes to space — a DFS on a linked list can use O(N) stack space.",
+    "In-place algorithms use O(1) extra space.",
+    "Output space (e.g. storing all subsets) is often counted separately and can dominate."
+  ],
+  "examples": [
+    "Hash map of N elements — O(N)",
+    "Recursion depth log N (balanced) vs N (skewed) — O(log N) vs O(N)",
+    "In-place reverse / two-pointer — O(1)",
+    "DP table of N×M — O(N·M)"
+  ],
+  "common_mistakes": [
+    "Forgetting to count the recursion stack.",
+    "Claiming O(1) space when a copy of the input is created."
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Quick Sort",
+  "category": "Sorting",
+  "description": "Quick sort is a divide-and-conquer algorithm that selects a pivot, partitions the array so elements smaller than the pivot come before it and larger after it, then recursively sorts each partition. Average O(N log N) with O(log N) space, but worst case O(N^2) on already-sorted input without good pivot choice.",
+  "approach": "Pick a pivot (often the last or a random element). Partition by scanning with two pointers so everything ≤ pivot goes left and everything > pivot goes right. Place pivot in its final position and recurse on both sides.",
+  "time_complexity": "O(N log N) average, O(N^2) worst case",
+  "space_complexity": "O(log N) recursion depth (average)",
+  "use_cases": [
+    "General in-place sorting.",
+    "Quickselect for k-th smallest/largest element in O(N) average."
+  ],
+  "common_mistakes": [
+    "Incorrect partition leading to infinite recursion.",
+    "Not handling duplicate pivot values carefully."
+  ],
+  "related_problems": ["Kth Largest Element in an Array", "Sort Colors", "Top K Frequent Elements"]
+}

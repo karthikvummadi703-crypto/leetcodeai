@@ -1,0 +1,20 @@
+{
+  "name": "BFS / DFS Graph Traversal",
+  "category": "Graph",
+  "description": "Breadth-First Search (BFS) explores neighbors level by level using a queue, ideal for finding the shortest path in unweighted graphs. Depth-First Search (DFS) explores as far as possible along a branch using a stack or recursion, ideal for connectivity, cycle detection and topological ordering.",
+  "how_to_identify": "Any problem on graphs or grids about reachability, connected components, shortest path (unweighted), or exploring all nodes without repeats.",
+  "use_cases": [
+    "Shortest path in an unweighted grid",
+    "Number of islands (grid islands)",
+    "Cycle detection",
+    "Topological sort of a DAG"
+  ],
+  "template": "BFS: enqueue start, mark visited, and while the queue is non-empty pop, process, and enqueue unvisited neighbors in order. DFS: mark visited and recurse (or use an explicit stack) on unvisited neighbors.",
+  "time_complexity": "O(V + E)",
+  "space_complexity": "O(V) for visited set plus queue/stack",
+  "common_mistakes": [
+    "Forgetting to mark nodes visited before enqueueing, causing duplicate processing or infinite loops.",
+    "Using BFS where the graph is weighted (needs Dijkstra)."
+  ],
+  "related_problems": ["Number of Islands", "Rotting Oranges", "Course Schedule", "Word Ladder"]
+}

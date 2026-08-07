@@ -1,0 +1,22 @@
+{
+  "number": 704,
+  "title": "Binary Search",
+  "difficulty": "Easy",
+  "tags": ["Array", "Binary Search"],
+  "pattern": "Binary Search",
+  "algorithm": "Binary Search",
+  "description": "Given an array of integers nums which is sorted in ascending order, and an integer target, write a function to search target in nums. If target exists, return its index; otherwise return -1.",
+  "constraints": ["1 <= nums.length <= 10^4", "nums is sorted in ascending order"],
+  "hints": [
+    "Because the array is sorted, you can discard half the search space at every step.",
+    "Watch out for infinite loops from off-by-one errors when choosing mid."
+  ],
+  "solution_approach": "Initialize two pointers lo and hi around the whole array. While lo <= hi, take mid = lo + (hi - lo) // 2, compare nums[mid] to target, and narrow the search window accordingly.",
+  "time_complexity": "O(log N)",
+  "space_complexity": "O(1)",
+  "common_mistakes": [
+    "Off-by-one in the loop condition causing an infinite loop or missing an element.",
+    "Using mid = (lo + hi) // 2 which can overflow for very large arrays in lower-level languages (prefer lo + (hi-lo)//2)."
+  ],
+  "similar_problems": ["Search Insert Position", "Find First and Last Position of Element in Sorted Array", "Search in Rotated Sorted Array"]
+}
