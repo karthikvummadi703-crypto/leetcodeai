@@ -70,7 +70,7 @@ def create_app() -> FastAPI:
         return {
             "name": "LeetCode Guidance AI",
             "status": "healthy",
-            "docs": "/docs" if not settings.is_production else None,
+            "docs": "/docs" if not settings.is_production else "disabled",
             "health": "/api/health",
         }
 
