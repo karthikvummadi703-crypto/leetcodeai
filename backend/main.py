@@ -65,6 +65,15 @@ def create_app() -> FastAPI:
     # ── Routes ────────────────────────────────────────────────
     app.include_router(api_router)
 
+    @app.get("/", include_in_schema=False)
+    async def root() -> dict[str, str]:
+        return {
+            "name": "LeetCode Guidance AI",
+            "status": "healthy",
+            "docs": "/docs" if not settings.is_production else None,
+            "health": "/api/health",
+        }
+
     return app
 
 
