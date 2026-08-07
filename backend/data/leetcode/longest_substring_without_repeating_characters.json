@@ -17,5 +17,60 @@
     "Not advancing the left pointer enough when a character repeats.",
     "Confusing substring (contiguous) with subsequence (order-preserving, not contiguous)."
   ],
-  "similar_problems": ["Longest Substring with At Most K Distinct Characters", "Minimum Window Substring", "Longest Repeating Character Replacement"]
+  "similar_problems": ["Longest Substring with At Most K Distinct Characters", "Minimum Window Substring", "Longest Repeating Character Replacement"],
+  "solutions": {
+    "brute_force": {
+      "description": "Generate every substring and check whether it has all unique characters.",
+      "code": [
+        "def length_of_longest_substring(s):",
+        "    n = len(s)",
+        "    best = 0",
+        "    for i in range(n):",
+        "        seen = set()",
+        "        for j in range(i, n):",
+        "            if s[j] in seen:",
+        "                break",
+        "            seen.add(s[j])",
+        "            best = max(best, j - i + 1)",
+        "    return best"
+      ],
+      "time_complexity": "O(N^2)",
+      "space_complexity": "O(min(N, alphabet))"
+    },
+    "better": {
+      "description": "Sliding window with a set: expand the right pointer, and when a character repeats, shrink from the left until the window is unique again.",
+      "code": [
+        "def length_of_longest_substring(s):",
+        "    seen = set()",
+        "    left = 0",
+        "    best = 0",
+        "    for right, ch in enumerate(s):",
+        "        while ch in seen:",
+        "            seen.remove(s[left])",
+        "            left += 1",
+        "        seen.add(ch)",
+        "        best = max(best, right - left + 1)",
+        "    return best"
+      ],
+      "time_complexity": "O(N)",
+      "space_complexity": "O(min(N, alphabet))"
+    },
+    "optimal": {
+      "description": "Sliding window with a hash map tracking each character's last seen index, letting the left pointer jump directly instead of one step at a time.",
+      "code": [
+        "def length_of_longest_substring(s):",
+        "    last_seen = {}",
+        "    left = 0",
+        "    best = 0",
+        "    for right, ch in enumerate(s):",
+        "        if ch in last_seen and last_seen[ch] >= left:",
+        "            left = last_seen[ch] + 1",
+        "        last_seen[ch] = right",
+        "        best = max(best, right - left + 1)",
+        "    return best"
+      ],
+      "time_complexity": "O(N)",
+      "space_complexity": "O(min(N, alphabet))"
+    }
+  }
 }

@@ -17,5 +17,67 @@
     "Forgetting to connect trailing nodes after one list runs out.",
     "Losing the reference to the real head when using dummy nodes."
   ],
-  "similar_problems": ["Merge k Sorted Lists", "Merge Sorted Array", "Sort List"]
+  "similar_problems": ["Merge k Sorted Lists", "Merge Sorted Array", "Sort List"],
+  "solutions": {
+    "brute_force": {
+      "description": "Collect all node values, sort them, and rebuild a fresh linked list.",
+      "code": [
+        "def merge_two_lists(list1, list2):",
+        "    values = []",
+        "    while list1:",
+        "        values.append(list1.val)",
+        "        list1 = list1.next",
+        "    while list2:",
+        "        values.append(list2.val)",
+        "        list2 = list2.next",
+        "    values.sort()",
+        "    dummy = ListNode()",
+        "    cur = dummy",
+        "    for v in values:",
+        "        cur.next = ListNode(v)",
+        "        cur = cur.next",
+        "    return dummy.next"
+      ],
+      "time_complexity": "O((N + M) log (N + M))",
+      "space_complexity": "O(N + M)"
+    },
+    "better": {
+      "description": "Merge in place with a dummy head and two pointers, always appending the smaller current value.",
+      "code": [
+        "def merge_two_lists(list1, list2):",
+        "    dummy = ListNode()",
+        "    cur = dummy",
+        "    while list1 and list2:",
+        "        if list1.val <= list2.val:",
+        "            cur.next = list1",
+        "            list1 = list1.next",
+        "        else:",
+        "            cur.next = list2",
+        "            list2 = list2.next",
+        "        cur = cur.next",
+        "    cur.next = list1 or list2",
+        "    return dummy.next"
+      ],
+      "time_complexity": "O(N + M)",
+      "space_complexity": "O(1)"
+    },
+    "optimal": {
+      "description": "The iterative two-pointer merge is optimal in time. A recursive version trades O(N + M) stack space for cleaner code.",
+      "code": [
+        "def merge_two_lists(list1, list2):",
+        "    if not list1:",
+        "        return list2",
+        "    if not list2:",
+        "        return list1",
+        "    if list1.val <= list2.val:",
+        "        list1.next = merge_two_lists(list1.next, list2)",
+        "        return list1",
+        "    else:",
+        "        list2.next = merge_two_lists(list1, list2.next)",
+        "        return list2"
+      ],
+      "time_complexity": "O(N + M)",
+      "space_complexity": "O(N + M) recursion stack"
+    }
+  }
 }

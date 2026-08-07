@@ -19,8 +19,8 @@ from app.schemas import Conversation
 
 log = get_logger("prompt_builder")
 
-MAX_HISTORY_TURNS = 20        # last N user/assistant turns included
-MAX_CONTEXT_CHARS = 8_000     # cap for the RAG context block
+MAX_HISTORY_TURNS = 10        # last N user/assistant turns included
+MAX_CONTEXT_CHARS = 6_000     # cap for the RAG context block
 
 
 def build_context_block(rag_result: RAGResult | None) -> str:

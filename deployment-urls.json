@@ -1,0 +1,11 @@
+{
+  "backend": {
+    "base_url": "https://leetcodeai-production-8356.up.railway.app",
+    "health": "https://leetcodeai-production-8356.up.railway.app/api/health",
+    "root": "https://leetcodeai-production-8356.up.railway.app/"
+  },
+  "frontend": {
+    "web_app": "https://complexity-analyser.web.app",
+    "firebase_app": "https://complexity-analyser.firebaseapp.com"
+  }
+}

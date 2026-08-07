@@ -17,5 +17,50 @@
     "Trying to sell before buying (using a future low to justify a past high).",
     "Not clamping profit to 0 when prices only decrease."
   ],
-  "similar_problems": ["Best Time to Buy and Sell Stock II", "Best Time to Buy and Sell Stock III", "Maximum Subarray"]
+  "similar_problems": ["Best Time to Buy and Sell Stock II", "Best Time to Buy and Sell Stock III", "Maximum Subarray"],
+  "solutions": {
+    "brute_force": {
+      "description": "Try every buy/sell pair and keep the maximum profit.",
+      "code": [
+        "def max_profit(prices):",
+        "    best = 0",
+        "    for i in range(len(prices)):",
+        "        for j in range(i + 1, len(prices)):",
+        "            best = max(best, prices[j] - prices[i])",
+        "    return best"
+      ],
+      "time_complexity": "O(N^2)",
+      "space_complexity": "O(1)"
+    },
+    "better": {
+      "description": "One pass keeping the minimum price seen so far; the best profit is the largest price - min_price observed.",
+      "code": [
+        "def max_profit(prices):",
+        "    min_price = float('inf')",
+        "    best = 0",
+        "    for price in prices:",
+        "        min_price = min(min_price, price)",
+        "        best = max(best, price - min_price)",
+        "    return best"
+      ],
+      "time_complexity": "O(N)",
+      "space_complexity": "O(1)"
+    },
+    "optimal": {
+      "description": "The single-pass scan above is optimal: you only ever need the cheapest price seen before the current day, and you can track it in O(1) space.",
+      "code": [
+        "def max_profit(prices):",
+        "    min_price = float('inf')",
+        "    best = 0",
+        "    for price in prices:",
+        "        if price < min_price:",
+        "            min_price = price",
+        "        else:",
+        "            best = max(best, price - min_price)",
+        "    return best"
+      ],
+      "time_complexity": "O(N)",
+      "space_complexity": "O(1)"
+    }
+  }
 }

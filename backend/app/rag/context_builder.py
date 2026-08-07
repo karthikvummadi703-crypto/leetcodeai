@@ -23,6 +23,14 @@ _SECTION_FIELDS: list[tuple[str, tuple[str, ...]]] = [
     ("Template", ("template", "framework", "skeleton", "pseudocode")),
 ]
 
+# Solution tiers → human label. Documents may store code under a
+# "solutions" dict with one entry per tier.
+_SOLUTION_TIERS: list[tuple[str, str]] = [
+    ("brute_force", "Brute Force"),
+    ("better", "Better"),
+    ("optimal", "Optimal"),
+]
+
 
 def _as_lines(value: Any) -> list[str]:
     """Coerce a raw field into a list of bullet lines."""
@@ -49,6 +57,53 @@ def _complexity_lines(doc: DataDocument) -> list[str]:
         lines.append(f"Space: {space_c}")
     if doc.sections.get("complexity"):
         lines.append(str(doc.sections["complexity"]))
+    return lines
+
+
+def _code_lines(value: Any) -> list[str]:
+    """Coerce a code payload (string or list of lines) into fenced code."""
+    if value is None:
+        return []
+    if isinstance(value, list):
+        code = "\n".join(str(line) for line in value if str(line).strip() or line == "")
+        if code.strip():
+            return [f"```python\n{code}\n```"]
+    text = str(value).strip()
+    if text:
+        return [f"```python\n{text}\n```"]
+    return []
+
+
+def _solutions_lines(doc: DataDocument) -> list[str]:
+    """
+    Render a document's per-tier solutions (brute force / better / optimal)
+    as readable context. Each tier renders its explanation, fenced code,
+    and complexity when present.
+    """
+    solutions = doc.sections.get("solutions")
+    if not isinstance(solutions, dict):
+        return []
+
+    lines: list[str] = []
+    for key, label in _SOLUTION_TIERS:
+        tier = solutions.get(key)
+        if not isinstance(tier, dict):
+            continue
+        parts: list[str] = []
+        approach = tier.get("description") or tier.get("approach") or tier.get("explanation")
+        if approach:
+            parts.append(str(approach).strip())
+        parts.extend(_code_lines(tier.get("code")))
+        complexity = []
+        if tier.get("time_complexity"):
+            complexity.append(f"Time: {tier['time_complexity']}")
+        if tier.get("space_complexity"):
+            complexity.append(f"Space: {tier['space_complexity']}")
+        if complexity:
+            parts.append(" | ".join(complexity))
+        if parts:
+            lines.append(f"**{label}:**")
+            lines.extend(parts)
     return lines
 
 
@@ -86,6 +141,11 @@ def format_document(doc: DataDocument) -> str:
     if complexity:
         parts.append("*Complexity:*")
         parts.extend(f"- {line}" for line in complexity)
+
+    solutions = _solutions_lines(doc)
+    if solutions:
+        parts.append("**Solutions (Brute Force → Better → Optimal):**")
+        parts.extend(solutions)
 
     for label, keys in _SECTION_FIELDS:
         value = None

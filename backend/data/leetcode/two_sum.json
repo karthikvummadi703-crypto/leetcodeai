@@ -22,5 +22,51 @@
     "Returning the same element twice by checking the map before inserting the current element.",
     "Using a nested loop which gives O(N^2) time."
   ],
-  "similar_problems": ["3Sum", "4Sum", "Subarray Sum Equals K", "Two Sum II - Input Array Is Sorted"]
+  "similar_problems": ["3Sum", "4Sum", "Subarray Sum Equals K", "Two Sum II - Input Array Is Sorted"],
+  "solutions": {
+    "brute_force": {
+      "description": "Check every pair of indices. For each i, look for target - nums[i] in the rest of the array.",
+      "code": [
+        "def two_sum(nums, target):",
+        "    n = len(nums)",
+        "    for i in range(n):",
+        "        for j in range(i + 1, n):",
+        "            if nums[i] + nums[j] == target:",
+        "                return [i, j]",
+        "    return []"
+      ],
+      "time_complexity": "O(N^2)",
+      "space_complexity": "O(1)"
+    },
+    "better": {
+      "description": "One pass storing each number and its index in a hash map. For each element, check if the complement target - num is already in the map.",
+      "code": [
+        "def two_sum(nums, target):",
+        "    seen = {}",
+        "    for i, num in enumerate(nums):",
+        "        complement = target - num",
+        "        if complement in seen:",
+        "            return [seen[complement], i]",
+        "        seen[num] = i",
+        "    return []"
+      ],
+      "time_complexity": "O(N)",
+      "space_complexity": "O(N)"
+    },
+    "optimal": {
+      "description": "The single-pass hash map approach above is already optimal (O(N) time). The two-pointer technique also works but requires the array to be sorted, so the hash map is preferred for the classic unsorted version.",
+      "code": [
+        "def two_sum(nums, target):",
+        "    seen = {}",
+        "    for i, num in enumerate(nums):",
+        "        complement = target - num",
+        "        if complement in seen:",
+        "            return [seen[complement], i]",
+        "        seen[num] = i",
+        "    return []"
+      ],
+      "time_complexity": "O(N)",
+      "space_complexity": "O(N)"
+    }
+  }
 }

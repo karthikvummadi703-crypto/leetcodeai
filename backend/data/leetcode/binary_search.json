@@ -18,5 +18,55 @@
     "Off-by-one in the loop condition causing an infinite loop or missing an element.",
     "Using mid = (lo + hi) // 2 which can overflow for very large arrays in lower-level languages (prefer lo + (hi-lo)//2)."
   ],
-  "similar_problems": ["Search Insert Position", "Find First and Last Position of Element in Sorted Array", "Search in Rotated Sorted Array"]
+  "similar_problems": ["Search Insert Position", "Find First and Last Position of Element in Sorted Array", "Search in Rotated Sorted Array"],
+  "solutions": {
+    "brute_force": {
+      "description": "Scan the whole array linearly until the target is found.",
+      "code": [
+        "def search(nums, target):",
+        "    for i, num in enumerate(nums):",
+        "        if num == target:",
+        "            return i",
+        "    return -1"
+      ],
+      "time_complexity": "O(N)",
+      "space_complexity": "O(1)"
+    },
+    "better": {
+      "description": "Classic binary search: repeatedly halve the search space using a while loop with inclusive bounds.",
+      "code": [
+        "def search(nums, target):",
+        "    lo, hi = 0, len(nums) - 1",
+        "    while lo <= hi:",
+        "        mid = lo + (hi - lo) // 2",
+        "        if nums[mid] == target:",
+        "            return mid",
+        "        elif nums[mid] < target:",
+        "            lo = mid + 1",
+        "        else:",
+        "            hi = mid - 1",
+        "    return -1"
+      ],
+      "time_complexity": "O(log N)",
+      "space_complexity": "O(1)"
+    },
+    "optimal": {
+      "description": "Recursive binary search is equivalent in time but consumes O(log N) stack space, so the iterative version is preferred.",
+      "code": [
+        "def search(nums, target):",
+        "    def helper(lo, hi):",
+        "        if lo > hi:",
+        "            return -1",
+        "        mid = lo + (hi - lo) // 2",
+        "        if nums[mid] == target:",
+        "            return mid",
+        "        if nums[mid] < target:",
+        "            return helper(mid + 1, hi)",
+        "        return helper(lo, mid - 1)",
+        "    return helper(0, len(nums) - 1)"
+      ],
+      "time_complexity": "O(log N)",
+      "space_complexity": "O(log N) recursion stack"
+    }
+  }
 }

@@ -34,7 +34,7 @@ class OpenRouterClient:
         self,
         model: str | None = None,
         temperature: float = 0.7,
-        max_tokens: int = 4096,
+        max_tokens: int = 2048,
         top_p: float = 1.0,
         timeout: float = 60.0,
         max_retries: int = 2,

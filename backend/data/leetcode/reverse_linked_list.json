@@ -17,5 +17,56 @@
     "Losing the reference to the next node before rewiring curr.next.",
     "Returning the old head instead of the new head."
   ],
-  "similar_problems": ["Reverse Linked List II", "Palindrome Linked List", "Swap Nodes in Pairs"]
+  "similar_problems": ["Reverse Linked List II", "Palindrome Linked List", "Swap Nodes in Pairs"],
+  "solutions": {
+    "brute_force": {
+      "description": "Read all values into a list, reverse the list, then rebuild a new linked list.",
+      "code": [
+        "def reverse_list(head):",
+        "    values = []",
+        "    cur = head",
+        "    while cur:",
+        "        values.append(cur.val)",
+        "        cur = cur.next",
+        "    dummy = ListNode()",
+        "    cur = dummy",
+        "    for v in reversed(values):",
+        "        cur.next = ListNode(v)",
+        "        cur = cur.next",
+        "    return dummy.next"
+      ],
+      "time_complexity": "O(N)",
+      "space_complexity": "O(N)"
+    },
+    "better": {
+      "description": "Iterative pointer reversal: keep prev/curr/next references and flip each next pointer in a single pass.",
+      "code": [
+        "def reverse_list(head):",
+        "    prev = None",
+        "    curr = head",
+        "    while curr:",
+        "        nxt = curr.next",
+        "        curr.next = prev",
+        "        prev = curr",
+        "        curr = nxt",
+        "    return prev"
+      ],
+      "time_complexity": "O(N)",
+      "space_complexity": "O(1)"
+    },
+    "optimal": {
+      "description": "The iterative reversal is optimal (O(N) time, O(1) space). A recursive alternative is cleaner but uses O(N) stack space.",
+      "code": [
+        "def reverse_list(head):",
+        "    if not head or not head.next:",
+        "        return head",
+        "    new_head = reverse_list(head.next)",
+        "    head.next.next = head",
+        "    head.next = None",
+        "    return new_head"
+      ],
+      "time_complexity": "O(N)",
+      "space_complexity": "O(N) recursion stack"
+    }
+  }
 }

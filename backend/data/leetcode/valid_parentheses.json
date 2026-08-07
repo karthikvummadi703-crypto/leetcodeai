@@ -17,5 +17,52 @@
     "Forgetting to check the stack is empty at the end (e.g. '([]' has an unmatched '(').",
     "Only counting occurrences instead of matching nested order."
   ],
-  "similar_problems": ["Generate Parentheses", "Longest Valid Parentheses", "Minimum Remove to Make Valid Parentheses"]
+  "similar_problems": ["Generate Parentheses", "Longest Valid Parentheses", "Minimum Remove to Make Valid Parentheses"],
+  "solutions": {
+    "brute_force": {
+      "description": "Repeatedly replace all adjacent pairs of valid brackets () [] {} with an empty string until no more replacements are possible; the string is valid if it becomes empty.",
+      "code": [
+        "def is_valid(s):",
+        "    while '()' in s or '[]' in s or '{}' in s:",
+        "        s = s.replace('()', '').replace('[]', '').replace('{}', '')",
+        "    return s == ''"
+      ],
+      "time_complexity": "O(N^2)",
+      "space_complexity": "O(N)"
+    },
+    "better": {
+      "description": "Push every opening bracket onto a stack. On a closing bracket, verify it matches the top of the stack; a mismatch or empty stack means invalid. At the end the stack must be empty.",
+      "code": [
+        "def is_valid(s):",
+        "    pairs = {')': '(', ']': '[', '}': '{'}",
+        "    stack = []",
+        "    for ch in s:",
+        "        if ch in pairs:",
+        "            if not stack or stack.pop() != pairs[ch]:",
+        "                return False",
+        "        else:",
+        "            stack.append(ch)",
+        "    return not stack"
+      ],
+      "time_complexity": "O(N)",
+      "space_complexity": "O(N)"
+    },
+    "optimal": {
+      "description": "The stack approach above is optimal: every character is pushed and popped at most once, so it runs in linear time with O(N) stack space.",
+      "code": [
+        "def is_valid(s):",
+        "    pairs = {')': '(', ']': '[', '}': '{'}",
+        "    stack = []",
+        "    for ch in s:",
+        "        if ch in pairs:",
+        "            if not stack or stack.pop() != pairs[ch]:",
+        "                return False",
+        "        else:",
+        "            stack.append(ch)",
+        "    return not stack"
+      ],
+      "time_complexity": "O(N)",
+      "space_complexity": "O(N)"
+    }
+  }
 }
