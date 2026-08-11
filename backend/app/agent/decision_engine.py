@@ -63,6 +63,7 @@ class Intent(str, Enum):
     FOLLOWUP = "follow_up"
     GENERAL = "general"
     OFF_TOPIC = "off_topic"
+    LEETCODE_ACCOUNT = "leetcode_account"
 
 
 @dataclass
@@ -199,6 +200,26 @@ _OFF_TOPIC_KEYWORDS = {
     "cooking",
 }
 
+# Phrases that clearly ask about the *user's own* LeetCode account — profile,
+# solved problems, progress, or next steps. These are matched before the
+# generic LeetCode keywords so "what should I solve next?" is treated as an
+# account-analysis request rather than a plain problem question.
+_ACCOUNT_RE = re.compile(
+    r"(my\s+(leetcode\s+)?(solved|submissions?|profile|account|progress|"
+    r"ranking|rating|stats|statistics|problems?|activity|streak))"
+    r"|(analy(ze|se)\s+my)"
+    r"|(what(\s+problems?)?\s+(should|do|can)\s+i\s+(solve|do|practice)\s+next)"
+    r"|(next\s+(problems?|questions?|topics?)\s+to\s+(solve|do|practice))"
+    r"|(recommend(ed|ation)?\s+(me\s+)?(some\s+)?(next\s+)?(problems?|questions?))"
+    r"|(suggest(ed|ion)?\s+(me\s+)?(some\s+)?(next\s+)?(problems?|questions?))"
+    r"|(my\s+(strengths?|weaknesses?))"
+    r"|(how\s+many\s+(problems|questions)\s+(have|did)\s+i\s+(solved|solve))"
+    r"|((problems|questions)\s+(have|did)\s+i\s+(solved|solve))"
+    r"|(link\s+(my\s+)?(leetcode|account))"
+    r"|(leetcode\s+(username|account|profile))",
+    re.IGNORECASE,
+)
+
 
 # ─── Decision logic ─────────────────────────────────────────────
 
@@ -308,7 +329,14 @@ def decide(query: str, history: list[Message] | None = None) -> Decision:
         log.info("Decision: greeting intent -> llm_only")
         return Decision(Intent.GREETING, "llm_only")
 
-    # 2. LeetCode / DSA / Algorithms → RAG + LLM.
+    # 2. Personal LeetCode account questions ("analyze my profile", "what
+    #    should I solve next") → LLM with account context injected by the
+    #    agent.
+    if _ACCOUNT_RE.search(normalized):
+        log.info("Decision: leetcode_account intent -> llm_only (account context)")
+        return Decision(Intent.LEETCODE_ACCOUNT, "llm_only")
+
+    # 3. LeetCode / DSA / Algorithms → RAG + LLM.
     if _contains_any(normalized, _LEETCODE_KEYWORDS):
         return _decision_rag(Intent.LEETCODE)
     if _contains_any(normalized, _DSA_KEYWORDS):
@@ -316,17 +344,17 @@ def decide(query: str, history: list[Message] | None = None) -> Decision:
     if _contains_any(normalized, _ALGORITHM_KEYWORDS):
         return _decision_rag(Intent.ALGORITHM)
 
-    # 3. General programming → LLM only (still scoped by the system prompt).
+    # 4. General programming → LLM only (still scoped by the system prompt).
     if _contains_any(normalized, _PROGRAMMING_KEYWORDS):
         log.info("Decision: programming intent -> llm_only")
         return Decision(Intent.PROGRAMMING, "llm_only")
 
-    # 4. Explicitly off-topic → polite scoped reply.
+    # 5. Explicitly off-topic → polite scoped reply.
     if _contains_any(normalized, _OFF_TOPIC_KEYWORDS):
         log.info("Decision: off-topic intent -> off_topic")
         return Decision(Intent.OFF_TOPIC, "off_topic", message=OFF_TOPIC_MESSAGE)
 
-    # 5. Conversation follow-up — the current message is ambiguous but the
+    # 6. Conversation follow-up — the current message is ambiguous but the
     #    previous discussion was technical. Treat it as a continuation of that
     #    thread and enrich the retrieval query with the prior topic, so
     #    "explain the optimal solution" still retrieves the Two Sum documents.
@@ -337,14 +365,14 @@ def decide(query: str, history: list[Message] | None = None) -> Decision:
         )
         return _decision_rag(Intent.FOLLOWUP, _enrich_query(prior_topic, normalized))
 
-    # 6. Ambiguous first question → let retrieval decide. A strong KB match
+    # 7. Ambiguous first question → let retrieval decide. A strong KB match
     #    makes it a DSA question.
     rag_result = retrieve(normalized, top_k=1)
     if rag_result.has_context:
         log.info("Decision: retrieval-backed dsa intent -> rag_plus_llm")
         return _decision_rag(Intent.DSA)
 
-    # 7. Default — never reject. Forward to the LLM; the agent transparently
+    # 8. Default — never reject. Forward to the LLM; the agent transparently
     #    degrades to LLM_ONLY if retrieval finds nothing. The mentor system
     #    prompt decides what is actually answerable.
     log.info(

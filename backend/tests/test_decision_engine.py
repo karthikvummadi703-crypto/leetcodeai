@@ -88,3 +88,26 @@ def test_problem_names_with_offtopic_vocab_not_refused():
 def test_clearly_off_topic_still_refused():
     decision = decide("What is the weather forecast for tomorrow?")
     assert decision.intent == Intent.OFF_TOPIC
+
+
+def test_account_analysis_routes_to_llm_only():
+    cases = [
+        "Can you analyze my solved problems?",
+        "What should I solve next?",
+        "Analyze my leetcode profile",
+        "Recommend me problems to solve",
+        "What should I do next on LeetCode?",
+        "How many problems have I solved?",
+        "Show me my progress",
+        "Suggest some next problems for me",
+    ]
+    for query in cases:
+        decision = decide(query)
+        assert decision.intent == Intent.LEETCODE_ACCOUNT, query
+        assert decision.strategy == "llm_only", query
+
+
+def test_recommend_an_approach_is_not_account_intent():
+    # "recommend" + DSA content (approach) must stay a problem question.
+    decision = decide("Recommend a good approach for the Two Sum problem?")
+    assert decision.intent != Intent.LEETCODE_ACCOUNT

@@ -50,6 +50,11 @@ class Settings(BaseSettings):
     rate_limit_max_requests: int = Field(default=20, description="Max requests per window per user")
     rate_limit_window_seconds: float = Field(default=60.0, description="Rate-limit window length (seconds)")
 
+    # --- LeetCode account integration ---
+    leetcode_cache_ttl_seconds: float = Field(
+        default=300.0, description="How long to cache a user's LeetCode account data"
+    )
+
     # --- Derived helpers ---
     @property
     def is_production(self) -> bool:

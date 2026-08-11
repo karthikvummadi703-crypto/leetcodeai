@@ -10,6 +10,7 @@ const Login = lazy(() => import("./pages/Login"));
 const Signup = lazy(() => import("./pages/Signup"));
 const Chat = lazy(() => import("./pages/Chat"));
 const Settings = lazy(() => import("./pages/Settings"));
+const LeetCode = lazy(() => import("./pages/LeetCode"));
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -60,6 +61,18 @@ function App() {
                     <ChatHistoryProvider>
                       <MainLayout>
                         <Settings />
+                      </MainLayout>
+                    </ChatHistoryProvider>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/progress"
+                element={
+                  <ProtectedRoute>
+                    <ChatHistoryProvider>
+                      <MainLayout>
+                        <LeetCode />
                       </MainLayout>
                     </ChatHistoryProvider>
                   </ProtectedRoute>

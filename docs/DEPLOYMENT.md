@@ -67,6 +67,7 @@ the recommended production setup: **Railway (backend)** + **Firebase Hosting
    | `BACKEND_URL`            | your Railway service URL                 |
    | `LOG_LEVEL`              | `INFO`                                   |
    | `RATE_LIMIT_ENABLED`     | `true` (default; set `false` to disable) |
+   | `LEETCODE_CACHE_TTL_SECONDS` | `300` (optional) — cache TTL for LeetCode data |
 
    > `FIREBASE_PRIVATE_KEY` is a PEM block. Paste it as a multi-line value;
    > if you set it inline, keep the `\n` escapes intact.
@@ -167,7 +168,14 @@ the recommended production setup: **Railway (backend)** + **Firebase Hosting
 - [ ] CORS: open the browser console and confirm no cross-origin errors on
       first chat.
 - [ ] `/docs` is disabled (it is when `APP_ENV=production`).
+- [ ] Settings → LeetCode account: linking a username succeeds and the
+      `/progress` dashboard renders solved counts + recommendations.
 - [ ] Monitoring/logs are reachable on the host platform.
+
+> The LeetCode feature needs **no extra keys**: it reads public profiles via
+> LeetCode's GraphQL API and matches them against the bundled problem
+> catalog. The optional `LEETCODE_CACHE_TTL_SECONDS` only tunes how long
+> account data is cached in-process.
 
 ## 6. Production hardening notes
 

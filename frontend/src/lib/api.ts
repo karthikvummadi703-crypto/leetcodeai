@@ -173,6 +173,146 @@ export async function exportData(user: User | null): Promise<ExportPayload> {
   });
 }
 
+// ─── LeetCode account integration ─────────────────────────────────
+
+export interface LeetCodeStatus {
+  success: boolean;
+  enabled: boolean;
+  username: string | null;
+}
+
+export interface LeetCodeLinkResult {
+  success: boolean;
+  username: string;
+  message: string;
+}
+
+export interface DifficultyBreakdown {
+  easy: number;
+  medium: number;
+  hard: number;
+  total: number;
+}
+
+export interface LeetCodeProfileSummary {
+  username: string;
+  real_name?: string | null;
+  avatar?: string | null;
+  ranking?: number | null;
+  reputation?: number | null;
+  country?: string | null;
+  school?: string | null;
+  accepted: DifficultyBreakdown;
+}
+
+export interface LeetCodeContest {
+  contests_attended?: number;
+  rating?: number | null;
+  global_ranking?: number | null;
+  top_percentage?: number | null;
+}
+
+export interface LeetCodeRecentSubmission {
+  id: string;
+  title: string;
+  title_slug: string;
+  timestamp: number;
+}
+
+export interface LeetCodeLanguageStat {
+  language: string;
+  problems_solved: number;
+}
+
+export interface LeetCodeAccount {
+  success: boolean;
+  linked: boolean;
+  username?: string | null;
+  profile?: LeetCodeProfileSummary | null;
+  progress?: {
+    accepted: DifficultyBreakdown;
+    failed: DifficultyBreakdown;
+    untouched: DifficultyBreakdown;
+  } | null;
+  recent_ac?: LeetCodeRecentSubmission[] | null;
+  languages?: LeetCodeLanguageStat[] | null;
+  contest?: LeetCodeContest | null;
+  analysis?: {
+    total_solved: number;
+    by_difficulty: DifficultyBreakdown;
+    topics_touched: string[];
+    weak_topics: string[];
+    recent_count: number;
+  } | null;
+  error?: string | null;
+}
+
+export interface RecommendationItem {
+  number: number;
+  title: string;
+  title_slug: string;
+  difficulty: string;
+  acceptance: number | null;
+  paid_only: boolean;
+  has_solution: boolean;
+  topics: string[];
+  url: string;
+}
+
+export interface LeetCodeRecommendations {
+  success: boolean;
+  username: string;
+  message: string;
+  solved_count: number;
+  by_difficulty: DifficultyBreakdown;
+  recommendations: RecommendationItem[];
+}
+
+export async function getLeetCodeStatus(user: User | null): Promise<LeetCodeStatus> {
+  const token = await getToken(user);
+  return request<LeetCodeStatus>(`${API_BASE_URL}/leetcode/status`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function linkLeetCode(
+  user: User | null,
+  username: string,
+): Promise<LeetCodeLinkResult> {
+  const token = await getToken(user);
+  return request<LeetCodeLinkResult>(`${API_BASE_URL}/leetcode/link`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ username }),
+  });
+}
+
+export async function unlinkLeetCode(user: User | null): Promise<LeetCodeStatus> {
+  const token = await getToken(user);
+  return request<LeetCodeStatus>(`${API_BASE_URL}/leetcode/link`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+}
+
+export async function getLeetCodeAccount(user: User | null): Promise<LeetCodeAccount> {
+  const token = await getToken(user);
+  return request<LeetCodeAccount>(`${API_BASE_URL}/leetcode/profile`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function getLeetCodeRecommendations(
+  user: User | null,
+  count = 5,
+): Promise<LeetCodeRecommendations> {
+  const token = await getToken(user);
+  return request<LeetCodeRecommendations>(
+    `${API_BASE_URL}/leetcode/recommendations?count=${count}`,
+    { headers: authHeaders(token) },
+  );
+}
+
 /**
  * Streams a chat completion from the backend over SSE.
  *

@@ -24,6 +24,15 @@ from app.schemas.chat import (
     HealthResponse,
     ErrorResponse,
 )
+from app.schemas.leetcode import (
+    LeetCodeLinkRequest,
+    LeetCodeLinkResponse,
+    LeetCodeProfileSummary,
+    LeetCodeAccountResponse,
+    RecommendationItem,
+    RecommendationsResponse,
+    LeetCodeStatusResponse,
+)
 
 __all__ = [
     "MessageRole",
@@ -50,4 +59,11 @@ __all__ = [
     "FeedbackResponse",
     "HealthResponse",
     "ErrorResponse",
+    "LeetCodeLinkRequest",
+    "LeetCodeLinkResponse",
+    "LeetCodeProfileSummary",
+    "LeetCodeAccountResponse",
+    "RecommendationItem",
+    "RecommendationsResponse",
+    "LeetCodeStatusResponse",
 ]

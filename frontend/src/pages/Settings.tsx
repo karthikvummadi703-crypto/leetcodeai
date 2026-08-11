@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -7,13 +7,22 @@ import {
   Sun,
   User as UserIcon,
   Loader2,
+  Link2,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useChatHistory } from "@/contexts/ChatHistoryContext";
 import { useToast } from "@/components/Toast";
 import { useTheme } from "@/lib/theme";
-import { deleteAllChats, exportData } from "@/lib/api";
+import {
+  deleteAllChats,
+  exportData,
+  getLeetCodeStatus,
+  linkLeetCode,
+  unlinkLeetCode,
+} from "@/lib/api";
 
 const Settings = () => {
   const { user } = useAuth();
@@ -23,6 +32,65 @@ const Settings = () => {
   const navigate = useNavigate();
   const [exporting, setExporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // ── LeetCode account linking ────────────────────────────────
+  const [username, setUsername] = useState("");
+  const [linkedUsername, setLinkedUsername] = useState<string | null>(null);
+  const [lcLoading, setLcLoading] = useState(true);
+  const [linking, setLinking] = useState(false);
+  const [unlinking, setUnlinking] = useState(false);
+
+  const loadStatus = useCallback(async () => {
+    setLcLoading(true);
+    try {
+      const status = await getLeetCodeStatus(user);
+      setLinkedUsername(status.enabled ? status.username : null);
+    } catch {
+      setLinkedUsername(null);
+    } finally {
+      setLcLoading(false);
+    }
+  }, [user]);
+
+  const handleLink = async () => {
+    const value = username.trim();
+    if (!value) {
+      toast("Enter your LeetCode username first", "error");
+      return;
+    }
+    setLinking(true);
+    try {
+      const result = await linkLeetCode(user, value);
+      if (result.success) {
+        setLinkedUsername(result.username);
+        setUsername("");
+        toast(result.message, "success");
+      } else {
+        toast(result.message, "error");
+      }
+    } catch {
+      toast("Could not reach the server. Try again.", "error");
+    } finally {
+      setLinking(false);
+    }
+  };
+
+  const handleUnlink = async () => {
+    setUnlinking(true);
+    try {
+      await unlinkLeetCode(user);
+      setLinkedUsername(null);
+      toast("LeetCode account unlinked", "success");
+    } catch {
+      toast("Could not unlink your LeetCode account", "error");
+    } finally {
+      setUnlinking(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadStatus();
+  }, [loadStatus]);
 
   const handleExport = async () => {
     setExporting(true);
@@ -94,6 +162,78 @@ const Settings = () => {
               {isDark ? "Switch to Light" : "Switch to Dark"}
             </Button>
           </div>
+        </section>
+
+        <section className="glass-card border border-border/50 rounded-xl p-4">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            LeetCode Account
+          </h2>
+
+          {lcLoading ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Checking account status…
+            </div>
+          ) : linkedUsername ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">
+                    Linked as <span className="text-primary">@{linkedUsername}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Your solved problems and recommendations are available.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/progress")}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  View progress
+                </Button>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-red-400">Unlink this account</span>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleUnlink}
+                  disabled={unlinking}
+                >
+                  {unlinking && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Unlink
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Link your public LeetCode profile so the AI can analyse your
+                solved problems and recommend what to practise next.
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleLink()}
+                  placeholder="LeetCode username"
+                  className="flex-1"
+                  maxLength={64}
+                />
+                <Button onClick={handleLink} disabled={linking}>
+                  {linking ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Link2 className="h-4 w-4 mr-2" />
+                  )}
+                  Link account
+                </Button>
+              </div>
+            </div>
+          )}
         </section>
 
         <section className="glass-card border border-border/50 rounded-xl p-4">

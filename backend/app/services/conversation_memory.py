@@ -60,6 +60,7 @@ class InMemoryStore:
         self._store: dict[str, dict[str, Conversation]] = {}
         self._profiles: dict[str, dict[str, Any]] = {}
         self._feedback: list[dict[str, Any]] = []
+        self._leetcode_links: dict[str, str] = {}
 
     def _user_store(self, user_id: str) -> dict[str, Conversation]:
         return self._store.setdefault(user_id, {})
@@ -200,6 +201,21 @@ class InMemoryStore:
         log.info("Feedback from {uid}: conv={cid} msg={mid} rating={r}",
                  uid=user_id, cid=conversation_id, mid=message_id, r=rating)
         return feedback_id
+
+    # -- LeetCode account linking --------------------------------
+
+    def set_leetcode_username(self, user_id: str, username: str) -> str:
+        self._leetcode_links[user_id] = username.strip()
+        log.info("Linked LeetCode username '{username}' for user {uid}",
+                 username=username.strip(), uid=user_id)
+        return username.strip()
+
+    def get_leetcode_username(self, user_id: str) -> str | None:
+        return self._leetcode_links.get(user_id)
+
+    def clear_leetcode_username(self, user_id: str) -> None:
+        self._leetcode_links.pop(user_id, None)
+        log.info("Unlinked LeetCode account for user {uid}", uid=user_id)
 
 
 # ──────────────────────────────────────────────
@@ -435,6 +451,31 @@ class FirestoreStore:
                  uid=user_id, cid=conversation_id, mid=message_id, r=rating)
         return feedback_id
 
+    # -- LeetCode account linking --------------------------------
+
+    def set_leetcode_username(self, user_id: str, username: str) -> str:
+        username = username.strip()
+        ref = self._db.collection("users").document(user_id)
+        if ref.get().exists:
+            ref.update({"leetcode_username": username})
+        else:
+            ref.set({"leetcode_username": username, "created_at": _utcnow()})
+        log.info("Linked LeetCode username '{username}' for user {uid}",
+                 username=username, uid=user_id)
+        return username
+
+    def get_leetcode_username(self, user_id: str) -> str | None:
+        doc = self._db.collection("users").document(user_id).get()
+        if not doc.exists:
+            return None
+        return doc.to_dict().get("leetcode_username")
+
+    def clear_leetcode_username(self, user_id: str) -> None:
+        ref = self._db.collection("users").document(user_id)
+        if ref.get().exists:
+            ref.update({"leetcode_username": None})
+        log.info("Unlinked LeetCode account for user {uid}", uid=user_id)
+
 
 # ──────────────────────────────────────────────
 # Store selection
@@ -529,3 +570,15 @@ def save_feedback(
     comment: str,
 ) -> str:
     return _store.save_feedback(user_id, conversation_id, message_id, rating, comment)
+
+
+def set_leetcode_username(user_id: str, username: str) -> str:
+    return _store.set_leetcode_username(user_id, username)
+
+
+def get_leetcode_username(user_id: str) -> str | None:
+    return _store.get_leetcode_username(user_id)
+
+
+def clear_leetcode_username(user_id: str) -> None:
+    _store.clear_leetcode_username(user_id)

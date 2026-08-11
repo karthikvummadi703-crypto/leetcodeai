@@ -18,6 +18,7 @@ from app.core import register_exception_handlers, get_logger
 from app.middleware import RequestLoggingMiddleware
 from app.api import api_router
 from app.rag import warm_knowledge_base
+from app.problems import warm_catalog
 
 log = get_logger("main")
 
@@ -28,8 +29,10 @@ def create_app() -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-        # Load the local JSON knowledge base once (cached for process lifetime).
+        # Load the local JSON knowledge base + full LeetCode catalog once
+        # (cached for process lifetime).
         warm_knowledge_base()
+        warm_catalog()
         log.info(
             "🚀 LeetCode Guidance AI starting — env={env} origins={origins}",
             env=settings.app_env,

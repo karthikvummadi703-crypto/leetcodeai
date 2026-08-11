@@ -37,6 +37,7 @@ from app.agent.decision_engine import (
     prior_technical_topic,
     _enrich_query,
     OFF_TOPIC_MESSAGE,
+    Intent,
 )
 
 log = get_logger("agent")
@@ -166,6 +167,154 @@ class Agent:
             intent=intent,
         )
 
+    # ── LeetCode account analysis ───────────────────────────────
+
+    def _account_not_linked_message(self) -> str:
+        return (
+            "I can analyse your LeetCode progress and recommend the best "
+            "problems to solve next — just link your LeetCode username first.\n\n"
+            "1. Open **Settings** in the sidebar.\n"
+            "2. Under **LeetCode account**, enter your username and press "
+            "**Link account**.\n\n"
+            "Once linked, ask me things like *\"analyze my solved problems\"* "
+            "or *\"what should I solve next?\"*"
+        )
+
+    async def _account_data(
+        self,
+        user_id: str,
+    ) -> tuple[str | None, dict, list[dict]]:
+        """
+        Load a user's LeetCode snapshot + recommendations.
+
+        Returns ``(username, snapshot, recommendations)``. When no account is
+        linked, ``username`` is ``None``.
+        """
+        from app.services.conversation_memory import get_leetcode_username
+        from app.leetcode.client import get_leetcode_client
+        from app.problems import get_catalog, recommend_next
+
+        username = get_leetcode_username(user_id)
+        if not username:
+            return None, {}, []
+
+        client = get_leetcode_client()
+        snapshot = await client.fetch_user_snapshot(username)
+
+        solved_problems: list[dict] = []
+        catalog = get_catalog()
+        for submission in snapshot.get("recent_ac") or []:
+            problem = catalog.get_by_slug(submission.get("title_slug", ""))
+            if problem:
+                solved_problems.append(problem.to_dict())
+        recommendations = recommend_next(
+            [s["title_slug"] for s in snapshot.get("recent_ac") or []],
+            solved_problems,
+            count=5,
+        )
+        return username, snapshot, recommendations
+
+    async def _run_account(
+        self,
+        conversation: Conversation,
+        user_message: str,
+    ) -> AgentResponse:
+        """Full pipeline for "analyse my LeetCode account" requests."""
+        start = time.perf_counter()
+        try:
+            username, snapshot, recommendations = await self._account_data(conversation.user_id)
+        except Exception as exc:
+            log.warning("LeetCode account lookup failed: {exc}", exc=exc)
+            return AgentResponse(
+                content=(
+                    "I couldn't reach LeetCode to look at your account right "
+                    "now. Please try again in a moment."
+                ),
+                strategy=AgentStrategy.LLM_ONLY,
+                latency_ms=0,
+                intent=Intent.LEETCODE_ACCOUNT.value,
+            )
+
+        if not username:
+            return AgentResponse(
+                content=self._account_not_linked_message(),
+                strategy=AgentStrategy.LLM_ONLY,
+                latency_ms=0,
+                intent=Intent.LEETCODE_ACCOUNT.value,
+            )
+
+        from app.services.leetcode_context import build_account_context
+
+        account_context = build_account_context(username, snapshot, recommendations)
+
+        # System prompt + injected account context + conversation + message.
+        base = build_messages(self._system_prompt, conversation, user_message, None)
+        messages: list[dict[str, str]] = [
+            base[0],
+            {"role": "system", "content": account_context},
+            *base[1:],
+        ]
+
+        model = self._llm.model
+        log.info(
+            "Analysing LeetCode account: user={uid} username='{username}' "
+            "solved={solved}",
+            uid=conversation.user_id,
+            username=username,
+            solved=snapshot.get("accepted", {}).get("total", 0),
+        )
+        content = await self._llm.complete(messages)
+
+        elapsed = int((time.perf_counter() - start) * 1000)
+        return AgentResponse(
+            content=content,
+            strategy=AgentStrategy.LLM_ONLY,
+            latency_ms=elapsed,
+            model=model,
+            intent=Intent.LEETCODE_ACCOUNT.value,
+        )
+
+    async def _stream_account(
+        self,
+        conversation: Conversation,
+        user_message: str,
+    ) -> AsyncIterator[str]:
+        """Streaming variant of ``_run_account``."""
+        start = time.perf_counter()
+        try:
+            username, snapshot, recommendations = await self._account_data(conversation.user_id)
+        except Exception as exc:
+            log.warning("LeetCode account lookup failed: {exc}", exc=exc)
+            yield "I couldn't reach LeetCode to look at your account right now. Please try again in a moment."
+            return
+
+        if not username:
+            yield self._account_not_linked_message()
+            return
+
+        from app.services.leetcode_context import build_account_context
+
+        account_context = build_account_context(username, snapshot, recommendations)
+        base = build_messages(self._system_prompt, conversation, user_message, None)
+        messages: list[dict[str, str]] = [
+            base[0],
+            {"role": "system", "content": account_context},
+            *base[1:],
+        ]
+
+        streamed = 0
+        async for chunk in self._llm.stream(messages):
+            streamed += len(chunk)
+            yield chunk
+
+        elapsed = int((time.perf_counter() - start) * 1000)
+        log.info(
+            "LeetCode account stream finished in {ms}ms user={uid} chars={chars}",
+            ms=elapsed,
+            uid=conversation.user_id,
+            chars=streamed,
+        )
+
     # ── Non-streaming entry point ────────────────────────────────
 
     async def run(
@@ -179,6 +328,8 @@ class Agent:
         strategy, rag_result, intent = await self._decide(conversation, user_message)
         if strategy == AgentStrategy.OFF_TOPIC:
             return await self._off_topic_reply(intent)
+        if intent == Intent.LEETCODE_ACCOUNT.value:
+            return await self._run_account(conversation, user_message)
 
         messages = build_messages(self._system_prompt, conversation, user_message, rag_result)
         self._log_prompt(strategy, messages)
@@ -225,6 +376,11 @@ class Agent:
         if strategy == AgentStrategy.OFF_TOPIC:
             log.info("Streaming off-topic reply (no model call)")
             yield OFF_TOPIC_MESSAGE
+            return
+
+        if intent == Intent.LEETCODE_ACCOUNT.value:
+            async for chunk in self._stream_account(conversation, user_message):
+                yield chunk
             return
 
         messages = build_messages(self._system_prompt, conversation, user_message, rag_result)
