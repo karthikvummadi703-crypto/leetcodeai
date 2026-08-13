@@ -1,0 +1,18 @@
+# Files kept out of the Railway build context (image slimming + secrets).
+
+# Local secrets — never ship these into the image.
+.env
+
+# Virtual environment + Python caches.
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Runtime log output (re-created on startup).
+logs/
+uvicorn.log
+
+# Dev/test tooling not needed in production.
+tests/
+scripts/

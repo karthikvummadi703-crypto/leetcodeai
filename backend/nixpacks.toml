@@ -1,0 +1,6 @@
+# Nixpacks configuration for Railway.
+#
+# Pins the Python runtime used to build/run the backend so the deployed
+# image matches local development (Python 3.13).
+[variables]
+NIXPACKS_PYTHON_VERSION = "3.13"

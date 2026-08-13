@@ -15,6 +15,7 @@ import rust from "react-syntax-highlighter/dist/esm/languages/prism/rust";
 import bash from "react-syntax-highlighter/dist/esm/languages/prism/bash";
 import sql from "react-syntax-highlighter/dist/esm/languages/prism/sql";
 import json from "react-syntax-highlighter/dist/esm/languages/prism/json";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Register only the languages we commonly surface so the syntax
 // highlighter stays lightweight.
@@ -30,6 +31,7 @@ SyntaxHighlighter.registerLanguage("rust", rust);
 SyntaxHighlighter.registerLanguage("bash", bash);
 SyntaxHighlighter.registerLanguage("sql", sql);
 SyntaxHighlighter.registerLanguage("json", json);
+
 import {
   Send,
   Copy,
@@ -38,10 +40,8 @@ import {
   Square,
   Bot,
   User as UserIcon,
-  Lightbulb,
-  GitPullRequest,
-  ListTree,
-  Network,
+  Paperclip,
+  Image as ImageIcon,
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -58,31 +58,27 @@ import {
 
 interface Message extends ChatMessage {}
 
-const SUGGESTIONS = [
-  {
-    icon: <Lightbulb className="h-5 w-5 text-yellow-500" />,
-    title: "Explain a Problem",
-    prompt: "Can you explain the Two Sum problem? I don't need the code yet, just help me understand the objective."
-  },
-  {
-    icon: <GitPullRequest className="h-5 w-5 text-blue-500" />,
-    title: "Get a Hint",
-    prompt: "I'm stuck on Longest Substring Without Repeating Characters. Can you give me a hint without giving away the solution?"
-  },
-  {
-    icon: <ListTree className="h-5 w-5 text-green-500" />,
-    title: "Complexity Analysis",
-    prompt: "What is the time and space complexity of merge sort? Please explain step-by-step."
-  },
-  {
-    icon: <Network className="h-5 w-5 text-purple-500" />,
-    title: "Pattern Explanation",
-    prompt: "Explain the Sliding Window pattern. What kind of problems is it good for?"
-  }
+const HexLogo = ({ size = 44 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="hexLogoChat" x1="0" y1="0" x2="64" y2="64">
+        <stop offset="0%" stopColor="#7c3aed"/>
+        <stop offset="100%" stopColor="#3b82f6"/>
+      </linearGradient>
+    </defs>
+    <path d="M32 2 L58 17 L58 47 L32 62 L6 47 L6 17 Z" fill="url(#hexLogoChat)" stroke="rgba(255,255,255,0.15)" strokeWidth="1"/>
+    <text x="32" y="42" textAnchor="middle" fontFamily="monospace" fontWeight="bold" fontSize="24" fill="white">&lt;/&gt;</text>
+  </svg>
+);
+
+const CHIPS = [
+  { label: "Explain", prompt: "Can you explain this problem step-by-step?" },
+  { label: "Hint", prompt: "Give me a subtle hint to point me in the right direction." },
+  { label: "Optimal Solution", prompt: "Explain the optimal solution for this problem." },
+  { label: "Brute Force", prompt: "Explain the brute force approach first." },
+  { label: "Similar Problems", prompt: "What are some similar LeetCode problems I can practice?" },
 ];
 
-// A single chat bubble. Memoized so streaming updates to one message do not
-// re-render the rest of the conversation.
 const MessageBubble = memo(function MessageBubble({
   msg,
   copiedId,
@@ -95,7 +91,10 @@ const MessageBubble = memo(function MessageBubble({
   if (msg.isStreaming && !msg.content) return null;
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
       className={`flex gap-4 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
     >
       {msg.role === "assistant" && (
@@ -105,14 +104,14 @@ const MessageBubble = memo(function MessageBubble({
       )}
 
       <div
-        className={`max-w-[85%] rounded-2xl p-4 ${
+        className={`max-w-[85%] rounded-2xl p-4 shadow-md ${
           msg.role === "user"
             ? "bg-primary text-primary-foreground rounded-tr-sm"
             : "glass-card border border-border/50 rounded-tl-sm"
         }`}
       >
         {msg.role === "user" ? (
-          <div className="whitespace-pre-wrap">{msg.content}</div>
+          <div className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</div>
         ) : (
           <div className="prose prose-invert max-w-none text-foreground prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent">
             <ReactMarkdown
@@ -127,19 +126,25 @@ const MessageBubble = memo(function MessageBubble({
                   if (match) {
                     const copyKey = msg.id + match[1];
                     return (
-                      <div className="relative mt-4 mb-4 rounded-md overflow-hidden border border-border/50">
-                        <div className="flex items-center justify-between px-4 py-1.5 bg-[#1e1e1e] border-b border-[#2d2d2d]">
-                          <span className="text-xs text-gray-400 font-mono">{match[1]}</span>
+                      <div className="relative mt-4 mb-4 rounded-xl overflow-hidden border border-border/50 shadow-lg">
+                        <div className="flex items-center justify-between px-4 py-2 bg-[#1e1e1e] border-b border-[#2d2d2d]">
+                          <span className="text-xs text-gray-400 font-mono font-semibold">{match[1]}</span>
                           <button
                             type="button"
                             onClick={() => onCopy(code, copyKey)}
                             aria-label="Copy code"
-                            className="text-gray-400 hover:text-gray-200 transition-colors"
+                            className="text-gray-400 hover:text-gray-200 transition-colors flex items-center gap-1.5"
                           >
                             {copiedId === copyKey ? (
-                              <Check className="h-4 w-4 text-green-500" />
+                              <>
+                                <Check className="h-3.5 w-3.5 text-green-500" />
+                                <span className="text-[10px] text-green-500 font-semibold">Copied</span>
+                              </>
                             ) : (
-                              <Copy className="h-4 w-4" />
+                              <>
+                                <Copy className="h-3.5 w-3.5" />
+                                <span className="text-[10px] font-semibold">Copy</span>
+                              </>
                             )}
                           </button>
                         </div>
@@ -148,7 +153,7 @@ const MessageBubble = memo(function MessageBubble({
                           style={vscDarkPlus}
                           language={match[1]}
                           PreTag="div"
-                          customStyle={{ margin: 0, borderRadius: 0, padding: "1rem" }}
+                          customStyle={{ margin: 0, borderRadius: 0, padding: "1rem", fontSize: "0.875rem" }}
                         >
                           {code}
                         </SyntaxHighlighter>
@@ -156,7 +161,7 @@ const MessageBubble = memo(function MessageBubble({
                     );
                   }
                   return (
-                    <code {...props} className="bg-muted px-1.5 py-0.5 rounded-md text-primary font-mono text-sm">
+                    <code {...props} className="bg-muted px-1.5 py-0.5 rounded-md text-primary font-mono text-xs font-semibold">
                       {children}
                     </code>
                   );
@@ -177,7 +182,7 @@ const MessageBubble = memo(function MessageBubble({
           <UserIcon className="h-5 w-5 text-secondary" />
         </div>
       )}
-    </div>
+    </motion.div>
   );
 });
 
@@ -200,8 +205,6 @@ const Chat = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Load an existing conversation (via ?conv=). A fresh conversation is
-  // created lazily on the first message so we never persist empty ones.
   useEffect(() => {
     let cancelled = false;
     setMessages([]);
@@ -232,8 +235,7 @@ const Chat = () => {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [convParam]);
+  }, [convParam, user, toast]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -243,7 +245,6 @@ const Chat = () => {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -261,11 +262,10 @@ const Chat = () => {
     const trimmed = text.trim();
     if (!trimmed || isTyping || loadingConversation) return;
 
-    // Ensure a conversation exists (create lazily if the bootstrapped one failed).
     let convId = conversationId;
     if (!convId) {
       try {
-        convId = await createConversation(user);
+        convId = await createConversation(user, trimmed.slice(0, 30) || "New Chat");
         setConversationId(convId);
       } catch {
         setStreamError("Could not connect to the assistant. Please try again in a moment.");
@@ -364,8 +364,6 @@ const Chat = () => {
     const lastUser = messages[cutIndex];
     if (!lastUser) return;
 
-    // Drop the last user turn + its response locally, remove it from the
-    // persisted store, then re-ask the same question.
     setMessages(messages.slice(0, cutIndex));
     try {
       await truncateLastTurn(user, conversationId);
@@ -382,13 +380,12 @@ const Chat = () => {
     }
   };
 
-  // Show the animated dots only while the model hasn't produced any tokens yet.
   const showTypingDots =
     isTyping &&
     !messages.some(m => m.isStreaming && m.content.length > 0);
 
   return (
-    <div className="flex flex-col h-full bg-background relative">
+    <div className="flex flex-col h-full bg-background relative overflow-hidden">
       {/* Chat Area */}
       <div className="flex-1 overflow-y-auto pb-32 pt-4 px-4 md:px-8" aria-label="Chat messages">
         {loadingConversation ? (
@@ -397,45 +394,55 @@ const Chat = () => {
           </div>
         ) : messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center max-w-3xl mx-auto text-center px-4">
-            <div className="mb-8">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">LeetCode Guidance AI</h1>
-              <p className="text-xl text-muted-foreground">Your Personal DSA Mentor</p>
-            </div>
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4 }}
+              className="mb-8 flex flex-col items-center"
+            >
+              <div className="mb-4">
+                <HexLogo size={56} />
+              </div>
+              <h1 className="text-3xl md:text-4xl font-extrabold mb-2 tracking-tight">LeetCode AI</h1>
+              <p className="text-muted-foreground text-sm max-w-md">
+                Your AI partner for cracking technical coding interviews, master algorithms & complexity analysis.
+              </p>
+            </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-              {SUGGESTIONS.map((suggestion, idx) => (
+            {/* Quick action chips */}
+            <motion.div 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+              className="flex flex-wrap gap-2 justify-center max-w-2xl"
+            >
+              {CHIPS.map((chip, idx) => (
                 <button
                   key={idx}
                   type="button"
-                  onClick={() => setInput(suggestion.prompt)}
-                  className="glass-card p-4 rounded-xl text-left hover:bg-card/80 transition-colors border border-border/50 group"
+                  onClick={() => setInput(chip.prompt)}
+                  className="px-4 py-2 text-xs font-semibold rounded-full border border-border/50 bg-card/60 hover:bg-primary/10 hover:border-primary/30 transition-all text-muted-foreground hover:text-foreground cursor-pointer shadow-sm"
                 >
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-background/50 rounded-lg group-hover:scale-110 transition-transform">
-                      {suggestion.icon}
-                    </div>
-                    <span className="font-semibold">{suggestion.title}</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {suggestion.prompt}
-                  </p>
+                  {chip.label}
                 </button>
               ))}
-            </div>
+            </motion.div>
           </div>
         ) : (
           <div className="max-w-4xl mx-auto space-y-6 pb-4">
-            {messages.map((msg) => (
-              <MessageBubble
-                key={msg.id}
-                msg={msg}
-                copiedId={copiedId}
-                onCopy={copyToClipboard}
-              />
-            ))}
+            <AnimatePresence initial={false}>
+              {messages.map((msg) => (
+                <MessageBubble
+                  key={msg.id}
+                  msg={msg}
+                  copiedId={copiedId}
+                  onCopy={copyToClipboard}
+                />
+              ))}
+            </AnimatePresence>
 
             {showTypingDots && (
-              <div className="flex gap-4 justify-start" aria-label="Assistant is typing">
+              <div className="flex gap-4 justify-start animate-pulse" aria-label="Assistant is typing">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30 mt-1">
                   <Bot className="h-5 w-5 text-primary" />
                 </div>
@@ -461,11 +468,11 @@ const Chat = () => {
           {messages.length > 0 && (
             <div className="absolute -top-12 left-0 right-0 flex justify-center gap-2">
               {isTyping ? (
-                <Button variant="outline" size="sm" onClick={handleStop} className="bg-background/80 backdrop-blur-md rounded-full text-xs">
+                <Button variant="outline" size="sm" onClick={handleStop} className="bg-background/80 backdrop-blur-md rounded-full text-xs border-border/50">
                   <Square className="h-3 w-3 mr-2" /> Stop generating
                 </Button>
               ) : (
-                <Button variant="outline" size="sm" onClick={handleRegenerate} className="bg-background/80 backdrop-blur-md rounded-full text-xs">
+                <Button variant="outline" size="sm" onClick={handleRegenerate} className="bg-background/80 backdrop-blur-md rounded-full text-xs border-border/50">
                   <RefreshCcw className="h-3 w-3 mr-2" /> Regenerate response
                 </Button>
               )}
@@ -480,15 +487,30 @@ const Chat = () => {
             </div>
           )}
 
-          <div className="glass-card rounded-2xl border border-border/50 shadow-2xl p-2 flex items-end gap-2 bg-card/80 backdrop-blur-xl">
+          <div className="glass-card rounded-2xl border border-border/50 shadow-2xl p-2.5 flex items-end gap-2 bg-card/85 backdrop-blur-xl">
+            <button
+              type="button"
+              className="p-2.5 text-muted-foreground hover:text-foreground hover:bg-accent/40 rounded-xl transition-colors cursor-pointer"
+              onClick={() => toast("Attachments feature coming soon!", "info")}
+            >
+              <Paperclip className="h-4.5 w-4.5" />
+            </button>
+            <button
+              type="button"
+              className="p-2.5 text-muted-foreground hover:text-foreground hover:bg-accent/40 rounded-xl transition-colors cursor-pointer"
+              onClick={() => toast("Camera/Image input coming soon!", "info")}
+            >
+              <ImageIcon className="h-4.5 w-4.5" />
+            </button>
+
             <textarea
               ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Message LeetCode Guidance AI..."
+              placeholder="Ask anything about DSA..."
               aria-label="Message LeetCode Guidance AI"
-              className="w-full max-h-48 min-h-[44px] bg-transparent resize-none focus:outline-none py-3 text-sm scrollbar-thin"
+              className="w-full max-h-48 min-h-[40px] bg-transparent resize-none focus:outline-none py-2 text-sm scrollbar-none"
               rows={1}
             />
 
@@ -497,13 +519,17 @@ const Chat = () => {
               disabled={!input.trim() || isTyping || loadingConversation}
               aria-label="Send message"
               size="icon"
-              className={`flex-shrink-0 mb-1 rounded-xl transition-all ${input.trim() && !isTyping ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-muted text-muted-foreground'}`}
+              className={`flex-shrink-0 rounded-xl transition-all h-9 w-9 ${
+                input.trim() && !isTyping 
+                  ? 'btn-gradient text-white shadow-md' 
+                  : 'bg-muted text-muted-foreground'
+              }`}
             >
-              <Send className="h-5 w-5" />
+              <Send className="h-4 w-4" />
             </Button>
           </div>
-          <div className="text-center mt-2">
-            <span className="text-[10px] text-muted-foreground">
+          <div className="text-center mt-2.5">
+            <span className="text-[10px] text-muted-foreground/60">
               LeetCode Guidance AI can make mistakes. Consider verifying important information.
             </span>
           </div>

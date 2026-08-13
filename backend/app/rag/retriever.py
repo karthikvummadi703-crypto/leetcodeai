@@ -211,6 +211,50 @@ def retrieve(
             )
         )
 
+    # Fall back/supplement with search from the full LeetCode catalog of 4,000+ problems.
+    from app.problems import get_catalog
+    catalog = get_catalog()
+    catalog_matches = catalog.search(query, limit=top_k)
+    has_digit = any(t.isdigit() for t in terms)
+    for problem in catalog_matches:
+        if len(chunks) >= top_k:
+            break
+        # Avoid duplicate if already fetched from local RAG documents
+        if any(c.metadata.get("number") == problem.number for c in chunks):
+            continue
+        
+        # Avoid generic false positives by requiring a problem number
+        # or at least 2 matching tokens in the problem title.
+        title_tokens = set(tokenize(problem.title))
+        matched_title_tokens = title_tokens.intersection(terms)
+        if not (has_digit or len(matched_title_tokens) >= 2):
+            continue
+
+        acceptance_str = f"{problem.acceptance * 100:.1f}%" if problem.acceptance is not None else "—"
+        content = (
+            f"### LeetCode Catalog Entry: {problem.title} (#{problem.number})\n"
+            f"Difficulty: {problem.difficulty}\n"
+            f"Topics: {', '.join(problem.topics)}\n"
+            f"URL: {problem.url}\n"
+            f"Acceptance: {acceptance_str}\n"
+            f"This is a verified problem in the LeetCode catalog. Answer the user's question about it using your pre-trained knowledge."
+        )
+        chunks.append(
+            RetrievedChunk(
+                content=content,
+                source="leetcode_catalog",
+                score=95.0,
+                metadata={
+                    "doc_id": f"catalog_{problem.number}",
+                    "title": problem.title,
+                    "category": "leetcode_catalog",
+                    "difficulty": problem.difficulty,
+                    "number": problem.number,
+                    "tags": problem.topics,
+                }
+            )
+        )
+
     log.info(
         "Retrieval: {matched} matches, kept {kept} for '{q}' (threshold={thr})",
         matched=len(scored),

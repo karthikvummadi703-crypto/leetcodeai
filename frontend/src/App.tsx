@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ChatHistoryProvider } from "./contexts/ChatHistoryContext";
 import { ToastProvider } from "./components/Toast";
 import MainLayout from "./layout/MainLayout";
+import SplashScreen from "./components/SplashScreen";
 
 const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./pages/Login"));
@@ -30,6 +31,7 @@ function App() {
   return (
     <ToastProvider>
       <AuthProvider>
+        <SplashScreen />
         <Router>
           <Suspense
             fallback={

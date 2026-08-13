@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Download,
@@ -24,6 +25,21 @@ import {
   unlinkLeetCode,
 } from "@/lib/api";
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100 } },
+};
+
 const Settings = () => {
   const { user } = useAuth();
   const { refresh } = useChatHistory();
@@ -34,7 +50,7 @@ const Settings = () => {
   const [deleting, setDeleting] = useState(false);
 
   // ── LeetCode account linking ────────────────────────────────
-  const [username, setUsername] = useState("");
+  const [accountInput, setAccountInput] = useState("");
   const [linkedUsername, setLinkedUsername] = useState<string | null>(null);
   const [lcLoading, setLcLoading] = useState(true);
   const [linking, setLinking] = useState(false);
@@ -53,9 +69,9 @@ const Settings = () => {
   }, [user]);
 
   const handleLink = async () => {
-    const value = username.trim();
+    const value = accountInput.trim();
     if (!value) {
-      toast("Enter your LeetCode username first", "error");
+      toast("Enter your LeetCode profile link or username first", "error");
       return;
     }
     setLinking(true);
@@ -63,7 +79,7 @@ const Settings = () => {
       const result = await linkLeetCode(user, value);
       if (result.success) {
         setLinkedUsername(result.username);
-        setUsername("");
+        setAccountInput("");
         toast(result.message, "success");
       } else {
         toast(result.message, "error");
@@ -129,59 +145,64 @@ const Settings = () => {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
-        <div className="flex items-center gap-3">
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="max-w-2xl mx-auto px-4 py-8 space-y-6"
+      >
+        <motion.div variants={itemVariants} className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/chat")} aria-label="Back">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-2xl font-bold">Settings</h1>
-        </div>
+        </motion.div>
 
-        <section className="glass-card border border-border/50 rounded-xl p-4 flex items-center gap-4">
+        <motion.section variants={itemVariants} className="glass-card border border-border/50 rounded-xl p-5 flex items-center gap-4">
           {user?.photoURL ? (
-            <img src={user.photoURL} alt="Avatar" className="w-12 h-12 rounded-full" />
+            <img src={user.photoURL} alt="Avatar" className="w-12 h-12 rounded-full border border-border/50" />
           ) : (
             <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
               <UserIcon className="h-5 w-5 text-primary" />
             </div>
           )}
           <div className="min-w-0">
-            <p className="font-medium truncate">{user?.displayName || "User"}</p>
+            <p className="font-semibold text-lg truncate">{user?.displayName || "User"}</p>
             <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
           </div>
-        </section>
+        </motion.section>
 
-        <section className="glass-card border border-border/50 rounded-xl p-4">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+        <motion.section variants={itemVariants} className="glass-card border border-border/50 rounded-xl p-5">
+          <h2 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider mb-4">
             Appearance
           </h2>
           <div className="flex items-center justify-between">
-            <span className="text-sm">Dark mode</span>
-            <Button variant="outline" size="sm" onClick={toggleTheme}>
+            <span className="text-sm font-medium">Dark mode</span>
+            <Button variant="outline" size="sm" onClick={toggleTheme} className="rounded-xl border-border/60">
               {isDark ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
               {isDark ? "Switch to Light" : "Switch to Dark"}
             </Button>
           </div>
-        </section>
+        </motion.section>
 
-        <section className="glass-card border border-border/50 rounded-xl p-4">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+        <motion.section variants={itemVariants} className="glass-card border border-border/50 rounded-xl p-5">
+          <h2 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider mb-4">
             LeetCode Account
           </h2>
 
           {lcLoading ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
+            <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
               Checking account status…
             </div>
           ) : linkedUsername ? (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium">
-                    Linked as <span className="text-primary">@{linkedUsername}</span>
+                  <p className="text-sm font-semibold">
+                    Linked as <span className="text-primary font-bold">@{linkedUsername}</span>
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Your solved problems and recommendations are available.
                   </p>
                 </div>
@@ -189,18 +210,21 @@ const Settings = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => navigate("/progress")}
+                  className="rounded-xl border-border/60 shrink-0"
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
                   View progress
                 </Button>
               </div>
+              <hr className="border-border/30" />
               <div className="flex items-center justify-between">
-                <span className="text-sm text-red-400">Unlink this account</span>
+                <span className="text-sm font-medium text-red-400">Unlink LeetCode account</span>
                 <Button
                   variant="destructive"
                   size="sm"
                   onClick={handleUnlink}
                   disabled={unlinking}
+                  className="rounded-xl"
                 >
                   {unlinking && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   Unlink
@@ -208,42 +232,42 @@ const Settings = () => {
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Link your public LeetCode profile so the AI can analyse your
-                solved problems and recommend what to practise next.
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Paste your public LeetCode profile link (or username) so the AI
+                can analyse your solved problems and recommend what to practise next.
               </p>
               <div className="flex gap-2">
                 <Input
                   type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={accountInput}
+                  onChange={(e) => setAccountInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleLink()}
-                  placeholder="LeetCode username"
-                  className="flex-1"
-                  maxLength={64}
+                  placeholder="https://leetcode.com/u/your-username"
+                  className="flex-1 rounded-xl glass-input h-11"
+                  maxLength={128}
                 />
-                <Button onClick={handleLink} disabled={linking}>
+                <Button onClick={handleLink} disabled={linking} className="btn-gradient rounded-xl h-11 px-5">
                   {linking ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   ) : (
                     <Link2 className="h-4 w-4 mr-2" />
                   )}
-                  Link account
+                  Link Account
                 </Button>
               </div>
             </div>
           )}
-        </section>
+        </motion.section>
 
-        <section className="glass-card border border-border/50 rounded-xl p-4">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+        <motion.section variants={itemVariants} className="glass-card border border-border/50 rounded-xl p-5">
+          <h2 className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider mb-4">
             Your Data
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm">Download your data</span>
-              <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
+              <span className="text-sm font-medium">Download your data</span>
+              <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting} className="rounded-xl border-border/60">
                 {exporting ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
@@ -252,16 +276,17 @@ const Settings = () => {
                 Export JSON
               </Button>
             </div>
+            <hr className="border-border/30" />
             <div className="flex items-center justify-between">
-              <span className="text-sm text-red-400">Delete all conversations</span>
-              <Button variant="destructive" size="sm" onClick={handleDeleteAll} disabled={deleting}>
+              <span className="text-sm font-medium text-red-400">Delete all conversations</span>
+              <Button variant="destructive" size="sm" onClick={handleDeleteAll} disabled={deleting} className="rounded-xl">
                 {deleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Delete all
+                Delete All
               </Button>
             </div>
           </div>
-        </section>
-      </div>
+        </motion.section>
+      </motion.div>
     </div>
   );
 };

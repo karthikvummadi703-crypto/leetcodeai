@@ -301,7 +301,7 @@ class LeetCodeClient:
         ``LEETCODE_CACHE_TTL_SECONDS``) so the AI agent and the dashboard do
         not hammer LeetCode's public API on every request.
         """
-        snapshot = await get_cached_snapshot(username)
+        snapshot = get_cached_snapshot(username)
         if snapshot is not None:
             return snapshot
 

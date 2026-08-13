@@ -1,7 +1,7 @@
 """
 LeetCode account integration endpoints.
 
-POST /api/leetcode/link             — Validate + store the user's LeetCode username.
+POST /api/leetcode/link             — Validate + store the user's LeetCode profile link/username.
 GET  /api/leetcode/profile          — Fetch the linked account's profile + analysis.
 GET  /api/leetcode/recommendations  — Recommend next problems to solve.
 DELETE /api/leetcode/link           — Unlink the LeetCode account.
@@ -55,8 +55,10 @@ async def leetcode_link(
     body: LeetCodeLinkRequest,
     user: UserProfile = Depends(get_current_user),
 ):
-    """Validate a LeetCode username and persist the link for this user."""
-    username = body.username.strip()
+    """Validate a LeetCode profile link or username and persist the link for this user."""
+    from app.leetcode.links import extract_leetcode_username
+
+    username = extract_leetcode_username(body.username)
     try:
         profile = await _client.get_profile(username)
     except UserNotFoundError:

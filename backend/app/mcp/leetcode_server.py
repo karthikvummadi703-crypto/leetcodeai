@@ -70,9 +70,16 @@ def create_server() -> Any:
 
     # ── Account / analysis tools ─────────────────────────────────
 
+    def _clean_username(raw: str) -> str:
+        """Normalise a bare username or full profile URL to a username."""
+        from app.leetcode.links import extract_leetcode_username
+
+        return extract_leetcode_username(raw)
+
     @server.tool()
     async def get_leetcode_profile(username: str) -> str:
-        """Return a user's public LeetCode profile and global solved counts."""
+        """Return a user's public LeetCode profile and global solved counts. Accepts a username or profile link."""
+        username = _clean_username(username)
         try:
             profile = await get_leetcode_client().get_profile(username)
         except UserNotFoundError:
@@ -93,7 +100,8 @@ def create_server() -> Any:
 
     @server.tool()
     async def get_solved_problems(username: str, limit: int = 20) -> str:
-        """Return a user's most recent accepted LeetCode submissions."""
+        """Return a user's most recent accepted LeetCode submissions. Accepts a username or profile link."""
+        username = _clean_username(username)
         try:
             submissions = await get_leetcode_client().get_recent_ac_submissions(username, limit)
         except UserNotFoundError:
@@ -107,7 +115,8 @@ def create_server() -> Any:
 
     @server.tool()
     async def analyze_leetcode_account(username: str) -> str:
-        """Analyse a LeetCode account and summarise solved problems by difficulty, topic and language."""
+        """Analyse a LeetCode account and summarise solved problems by difficulty, topic and language. Accepts a username or profile link."""
+        username = _clean_username(username)
         try:
             snapshot = await get_leetcode_client().fetch_user_snapshot(username)
         except UserNotFoundError:
@@ -148,7 +157,8 @@ def create_server() -> Any:
         count: int = 5,
         difficulty: str = "",
     ) -> str:
-        """Recommend the next problems a user should solve, based on their solved history."""
+        """Recommend the next problems a user should solve, based on their solved history. Accepts a username or profile link."""
+        username = _clean_username(username)
         if difficulty and difficulty.lower() not in {d.lower() for d in _DIFFICULTIES}:
             return f"Difficulty must be one of {', '.join(_DIFFICULTIES)} (or empty)."
         try:
@@ -216,31 +226,14 @@ def create_server() -> Any:
 
 
 async def _run_stdio(server: Any) -> None:
-    from mcp.server.stdio import stdio_server
-
-    async with stdio_server() as (read_stream, write_stream):
-        await server.run(read_stream, write_stream, server.create_initialization_options())
+    # FastMCP >= 1.9 owns the stdio transport itself.
+    await server.run_stdio_async()
 
 
 async def _run_sse(server: Any) -> None:
-    from mcp.server.sse import SseServerTransport
-    from starlette.applications import Starlette
-    from starlette.routing import Mount, Route
-    import uvicorn
-
-    transport = SseServerTransport("/messages/")
-    async def sse_endpoint(request):
-        async with transport.connect_sse(request.scope, request.receive, request._send) as streams:
-            await server.run(streams[0], streams[1], server.create_initialization_options())
-
-    app = Starlette(
-        routes=[
-            Route("/sse", endpoint=sse_endpoint),
-            Mount("/messages/", app=transport.handle_post_message),
-        ]
-    )
-    config = uvicorn.Config(app, host="0.0.0.0", port=8001, log_level="info")
-    await uvicorn.Server(config).serve()
+    # FastMCP exposes the SSE transport at /sse (SSE endpoint) and
+    # /messages/ (client->server POST endpoint).
+    await server.run_sse_async()
 
 
 def main() -> None:

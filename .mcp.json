@@ -4,10 +4,7 @@
       "command": "python",
       "args": [
         "backend/mcp_server.py"
-      ],
-      "env": {
-        "MCP_LEETCODE_ENABLED": "true"
-      }
+      ]
     }
   }
 }

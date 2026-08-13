@@ -38,33 +38,33 @@
   }
 
   .dark {
-    --background: 240 10% 4%;
-    --foreground: 210 40% 98%;
+    --background: 230 40% 6%;
+    --foreground: 220 20% 95%;
     
-    --card: 240 10% 6%;
-    --card-foreground: 210 40% 98%;
+    --card: 230 35% 9%;
+    --card-foreground: 220 20% 95%;
     
-    --popover: 240 10% 6%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 230 35% 9%;
+    --popover-foreground: 220 20% 95%;
     
-    --primary: 270 80% 60%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 265 85% 62%;
+    --primary-foreground: 220 20% 98%;
     
-    --secondary: 220 80% 60%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 230 80% 62%;
+    --secondary-foreground: 220 20% 98%;
     
-    --muted: 240 10% 12%;
-    --muted-foreground: 240 10% 65%;
+    --muted: 230 25% 14%;
+    --muted-foreground: 230 15% 55%;
     
-    --accent: 240 10% 15%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 230 25% 16%;
+    --accent-foreground: 220 20% 95%;
     
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     
-    --border: 240 10% 12%;
-    --input: 240 10% 12%;
-    --ring: 270 80% 60%;
+    --border: 230 20% 14%;
+    --input: 230 20% 14%;
+    --ring: 265 85% 62%;
   }
 }
 
@@ -106,35 +106,186 @@
   * {
     border-color: var(--color-border);
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 }
 
+/* ── Glassmorphism Utilities ───────────────────────────────── */
+
 .glass {
   background-color: color-mix(in srgb, var(--color-card) 40%, transparent);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.15);
 }
 
 .glass-card {
-  background-color: color-mix(in srgb, var(--color-card) 60%, transparent);
+  background-color: color-mix(in srgb, var(--color-card) 65%, transparent);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.08);
 }
 
+.glass-sidebar {
+  background: linear-gradient(
+    180deg,
+    hsl(230, 35%, 10%) 0%,
+    hsl(230, 40%, 7%) 100%
+  );
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-input {
+  background-color: color-mix(in srgb, var(--color-card) 50%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-input:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent);
+}
+
+/* ── Gradient Utilities ────────────────────────────────────── */
+
 .text-gradient {
-  background-image: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+  background-image: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 .bg-gradient-premium {
-  background-image: linear-gradient(to bottom right, var(--color-background), var(--color-background), color-mix(in srgb, var(--color-primary) 10%, transparent));
+  background-image: linear-gradient(
+    160deg,
+    var(--color-background) 0%,
+    var(--color-background) 40%,
+    color-mix(in srgb, var(--color-primary) 8%, var(--color-background)) 100%
+  );
+}
+
+.bg-gradient-hero {
+  background: radial-gradient(
+    ellipse 80% 60% at 50% 40%,
+    color-mix(in srgb, var(--color-primary) 12%, transparent),
+    transparent 70%
+  ),
+  radial-gradient(
+    ellipse 60% 50% at 80% 60%,
+    color-mix(in srgb, var(--color-secondary) 8%, transparent),
+    transparent 70%
+  ),
+  var(--color-background);
+}
+
+.btn-gradient {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: white;
+  border: none;
+  position: relative;
+  overflow: hidden;
+  transition: opacity 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 15px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.btn-gradient:hover {
+  opacity: 0.92;
+  box-shadow: 0 6px 25px color-mix(in srgb, var(--color-primary) 40%, transparent);
+  transform: translateY(-1px);
+}
+
+.btn-gradient:active {
+  transform: translateY(0);
+}
+
+/* ── Glow Effects ──────────────────────────────────────────── */
+
+.glow-primary {
+  box-shadow: 0 0 40px color-mix(in srgb, var(--color-primary) 20%, transparent),
+              0 0 80px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.glow-text {
+  text-shadow: 0 0 30px color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+
+/* ── Animated Background ───────────────────────────────────── */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 6s ease-in-out 2s infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+/* ── Scrollbar Styling ─────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--color-muted-foreground) 30%, transparent);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--color-muted-foreground) 50%, transparent);
+}
+
+/* ── Hexagonal Logo Shape ──────────────────────────────────── */
+
+.hex-logo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hex-logo::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  opacity: 0.2;
 }

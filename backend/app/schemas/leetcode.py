@@ -10,12 +10,12 @@ from pydantic import BaseModel, Field
 
 
 class LeetCodeLinkRequest(BaseModel):
-    """Store the user's LeetCode username."""
+    """Store the user's LeetCode profile link or username."""
     username: str = Field(
         ...,
         min_length=1,
-        max_length=64,
-        description="LeetCode username (public profile)",
+        max_length=128,
+        description="LeetCode public profile link or username",
     )
 
 
