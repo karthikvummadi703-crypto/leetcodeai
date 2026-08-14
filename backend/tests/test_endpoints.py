@@ -7,11 +7,10 @@ without touching Firebase. Conversations live in the in-memory store.
 """
 
 import pytest
-from httpx import AsyncClient, ASGITransport
-
-from main import app
 from app.auth import get_current_user
 from app.schemas import UserProfile
+from httpx import ASGITransport, AsyncClient
+from main import app
 
 
 @pytest.fixture
@@ -74,7 +73,9 @@ async def test_chat_non_streaming_persists_turn(client, monkeypatch):
 @pytest.mark.asyncio
 async def test_chat_search(client):
     async with client as c:
-        conv = (await c.post("/api/new-chat", json={"title": "Merge Sort Deep Dive"})).json()["conversation_id"]
+        conv = (await c.post("/api/new-chat", json={"title": "Merge Sort Deep Dive"})).json()[
+            "conversation_id"
+        ]
         await c.post(
             "/api/chat",
             json={"conversation_id": conv, "message": "Tell me about merge sort", "stream": False},
@@ -141,7 +142,9 @@ async def test_conversation_is_private_to_owner():
     transport = ASGITransport(app=app)
     try:
         async with AsyncClient(transport=transport, base_url="http://test") as c:
-            conv = (await c.post("/api/new-chat", json={"title": "Secret"})).json()["conversation_id"]
+            conv = (await c.post("/api/new-chat", json={"title": "Secret"})).json()[
+                "conversation_id"
+            ]
 
         # Second user must not be able to read or modify it.
         app.dependency_overrides[get_current_user] = intruder
@@ -189,7 +192,9 @@ async def test_feedback_and_validation(client):
         assert fb.json()["success"] is True
 
         # Empty message rejected by validation.
-        bad = await c.post("/api/chat", json={"conversation_id": "c1", "message": "", "stream": False})
+        bad = await c.post(
+            "/api/chat", json={"conversation_id": "c1", "message": "", "stream": False}
+        )
         assert bad.status_code == 422
 
         # Invalid rating rejected.

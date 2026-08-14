@@ -131,7 +131,8 @@ def recommend_next(
     catalog = get_catalog()
 
     candidates = [
-        problem for problem in catalog.problems
+        problem
+        for problem in catalog.problems
         if _normalize_slug(problem.title_slug) not in solved_slugs and not problem.paid_only
     ]
     if not candidates:
@@ -182,8 +183,7 @@ def recommend_next(
             score += 12.0
         # Topics with very few solved problems -> moderate boost.
         weak_topic_hits = sum(
-            8.0 for t in problem_topics & touched_topics
-            if solved_topics.get(t, 0) <= 1
+            8.0 for t in problem_topics & touched_topics if solved_topics.get(t, 0) <= 1
         )
         score += weak_topic_hits
         # Difficulty targeting: push the user one rung up from their comfort

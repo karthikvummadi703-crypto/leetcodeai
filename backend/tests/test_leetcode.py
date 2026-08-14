@@ -5,14 +5,12 @@ LeetCode network calls are fully stubbed so the suite stays offline.
 """
 
 import pytest
-from httpx import AsyncClient, ASGITransport
-
-from main import app
+from app.api import leetcode as leetcode_module
 from app.auth import get_current_user
 from app.leetcode.client import LeetCodeError, UserNotFoundError
 from app.schemas import UserProfile
-from app.api import leetcode as leetcode_module
-
+from httpx import ASGITransport, AsyncClient
+from main import app
 
 PROFILE = {
     "username": "rock",
@@ -35,10 +33,20 @@ SNAPSHOT = {
     },
     "recent_ac": [
         {"id": "1", "title": "Two Sum", "title_slug": "two-sum", "timestamp": 1700000000},
-        {"id": "2", "title": "Valid Parentheses", "title_slug": "valid-parentheses", "timestamp": 1700000001},
+        {
+            "id": "2",
+            "title": "Valid Parentheses",
+            "title_slug": "valid-parentheses",
+            "timestamp": 1700000001,
+        },
     ],
     "languages": [{"language": "Python3", "problems_solved": 12}],
-    "contest": {"contests_attended": 3, "rating": 1500, "global_ranking": 50000, "top_percentage": 10.0},
+    "contest": {
+        "contests_attended": 3,
+        "rating": 1500,
+        "global_ranking": 50000,
+        "top_percentage": 10.0,
+    },
 }
 
 

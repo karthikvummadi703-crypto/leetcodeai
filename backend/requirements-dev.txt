@@ -1,0 +1,7 @@
+# Dev / CI dependencies — install with:
+#   pip install -r requirements.txt -r requirements-dev.txt
+pytest>=8.0,<10
+pytest-asyncio>=0.23,<2
+ruff>=0.9,<1
+mypy>=1.10,<3
+pre-commit>=3.6,<5

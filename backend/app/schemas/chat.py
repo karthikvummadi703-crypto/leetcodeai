@@ -4,22 +4,23 @@ Pydantic schemas for the chat domain.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from enum import Enum
+from datetime import UTC, datetime
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
 def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 # ──────────────────────────────────────────────
 # Enums
 # ──────────────────────────────────────────────
 
-class MessageRole(str, Enum):
+
+class MessageRole(StrEnum):
     USER = "user"
     ASSISTANT = "assistant"
     SYSTEM = "system"
@@ -29,8 +30,10 @@ class MessageRole(str, Enum):
 # Request schemas
 # ──────────────────────────────────────────────
 
+
 class ChatRequest(BaseModel):
     """Payload sent by the frontend to request an AI response."""
+
     conversation_id: str = Field(..., min_length=1, description="Unique conversation identifier")
     message: str = Field(..., min_length=1, max_length=10_000, description="User message text")
     stream: bool = Field(default=True, description="Whether to stream the response")
@@ -38,19 +41,22 @@ class ChatRequest(BaseModel):
 
 class NewChatRequest(BaseModel):
     """Create a new conversation."""
+
     title: str = Field(default="New Chat", max_length=200)
 
 
 class RenameChatRequest(BaseModel):
     """Rename an existing conversation."""
+
     title: str = Field(..., min_length=1, max_length=200)
 
 
 class FeedbackRequest(BaseModel):
     """User feedback on an AI response."""
+
     conversation_id: str = Field(..., min_length=1)
     message_id: str = Field(..., min_length=1)
-    rating: int = Field(..., ge=1, le=5, description="1–5 star rating")
+    rating: int = Field(..., ge=1, le=5, description="1-5 star rating")
     comment: str = Field(default="", max_length=2000)
 
 
@@ -58,8 +64,10 @@ class FeedbackRequest(BaseModel):
 # Domain models
 # ──────────────────────────────────────────────
 
+
 class Message(BaseModel):
     """A single message within a conversation."""
+
     id: str = Field(..., description="Unique message ID")
     role: MessageRole
     content: str
@@ -69,6 +77,7 @@ class Message(BaseModel):
 
 class Conversation(BaseModel):
     """A full conversation thread."""
+
     id: str
     user_id: str
     title: str = "New Chat"
@@ -79,6 +88,7 @@ class Conversation(BaseModel):
 
 class UserProfile(BaseModel):
     """Public-facing user profile."""
+
     uid: str
     email: str | None = None
     display_name: str | None = None
@@ -89,8 +99,10 @@ class UserProfile(BaseModel):
 # Response schemas
 # ──────────────────────────────────────────────
 
+
 class ChatResponse(BaseModel):
     """Non-streaming AI response."""
+
     success: bool = True
     conversation_id: str
     message: Message
@@ -126,12 +138,14 @@ class RenameChatResponse(BaseModel):
 
 class ConversationDetailResponse(BaseModel):
     """Full conversation with all messages."""
+
     success: bool = True
     conversation: Conversation
 
 
 class SearchChatsResponse(BaseModel):
     """Results of a sidebar search across titles and message content."""
+
     success: bool = True
     query: str = ""
     conversations: list[ConversationListItem] = Field(default_factory=list)
@@ -139,12 +153,14 @@ class SearchChatsResponse(BaseModel):
 
 class TruncateResponse(BaseModel):
     """Response after removing the last user/assistant turn (regenerate)."""
+
     success: bool = True
     message_count: int
 
 
 class ExportedConversation(BaseModel):
     """A conversation in the portable export format."""
+
     id: str
     title: str
     created_at: datetime

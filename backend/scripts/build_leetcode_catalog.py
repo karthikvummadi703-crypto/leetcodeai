@@ -95,8 +95,7 @@ def _fetch_page(client: httpx.Client, skip: int, limit: int) -> dict[str, Any]:
             last_error = exc
             delay = BASE_DELAY_SECONDS * (2 ** (attempt - 1))
             print(
-                f"  retry {attempt}/{MAX_RETRIES} for skip={skip}: {exc} "
-                f"(waiting {delay:.0f}s)",
+                f"  retry {attempt}/{MAX_RETRIES} for skip={skip}: {exc} (waiting {delay:.0f}s)",
                 flush=True,
             )
             time.sleep(delay)

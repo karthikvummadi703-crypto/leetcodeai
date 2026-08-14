@@ -34,8 +34,11 @@ def test_recommend_next_invalid_difficulty():
 def test_analyze_solved_summarises_counts_and_topics():
     solved = [
         {"title_slug": "two-sum", "difficulty": "Easy", "topics": ["Array", "Hash Table"]},
-        {"title_slug": "longest-substring-without-repeating-characters",
-         "difficulty": "Medium", "topics": ["String", "Sliding Window"]},
+        {
+            "title_slug": "longest-substring-without-repeating-characters",
+            "difficulty": "Medium",
+            "topics": ["String", "Sliding Window"],
+        },
         {"title_slug": "valid-parentheses", "difficulty": "Easy", "topics": ["Stack", "String"]},
     ]
     analysis = analyze_solved(solved)

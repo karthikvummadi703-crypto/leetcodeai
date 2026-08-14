@@ -10,7 +10,8 @@ from __future__ import annotations
 import asyncio
 import random
 import time
-from typing import Any, AsyncIterator
+from collections.abc import AsyncIterator
+from typing import Any
 
 import httpx
 import orjson
@@ -139,13 +140,15 @@ class OpenRouterClient:
             except httpx.TimeoutException:
                 last_exc = LLMError("Request to OpenRouter timed out.")
                 log.warning("Timeout on attempt {attempt}", attempt=attempt)
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 - any failure is retried before surfacing to the caller
                 last_exc = exc
                 log.warning("Attempt {attempt} failed: {exc}", attempt=attempt, exc=exc)
 
             await self._backoff(attempt)
 
-        raise LLMError(f"OpenRouter request failed after {self._max_retries + 1} attempts: {last_exc}")
+        raise LLMError(
+            f"OpenRouter request failed after {self._max_retries + 1} attempts: {last_exc}"
+        )
 
     # ── Streaming completion ──────────────────────────────────
 
@@ -196,23 +199,23 @@ class OpenRouterClient:
                 if attempt > self._max_retries:
                     raise LLMError(
                         f"Streaming request failed after {self._max_retries + 1} attempts: {exc}"
-                    )
+                    ) from exc
                 await self._backoff(attempt)
             except httpx.TimeoutException:
                 if started:
-                    raise LLMError("Streaming request to OpenRouter timed out.")
+                    raise LLMError("Streaming request to OpenRouter timed out.") from None
                 log.warning("Stream timeout on attempt {attempt}", attempt=attempt)
                 if attempt > self._max_retries:
                     raise LLMError(
                         f"Streaming request timed out after {self._max_retries + 1} attempts."
-                    )
+                    ) from None
                 await self._backoff(attempt)
             except Exception as exc:
                 if started:
-                    raise LLMError(f"Streaming failed: {exc}")
+                    raise LLMError(f"Streaming failed: {exc}") from exc
                 log.error("Stream attempt {attempt} failed: {exc}", attempt=attempt, exc=exc)
                 if attempt > self._max_retries:
-                    raise LLMError(f"Streaming failed: {exc}")
+                    raise LLMError(f"Streaming failed: {exc}") from exc
                 await self._backoff(attempt)
 
     async def _stream_once(
@@ -221,32 +224,30 @@ class OpenRouterClient:
         payload: dict[str, Any],
     ) -> AsyncIterator[str]:
         """Open one streaming connection and yield its text chunks."""
-        async with httpx.AsyncClient(timeout=self._timeout) as client:
-            async with client.stream(
-                "POST", url, headers=self._headers(), json=payload
-            ) as response:
-                if response.status_code != 200:
-                    body = await response.aread()
-                    log.error(
-                        "Stream error {status}: {body}",
-                        status=response.status_code,
-                        body=body[:500],
-                    )
-                    raise LLMError(
-                        f"OpenRouter stream returned status {response.status_code}."
-                    )
+        async with (
+            httpx.AsyncClient(timeout=self._timeout) as client,
+            client.stream("POST", url, headers=self._headers(), json=payload) as response,
+        ):
+            if response.status_code != 200:
+                body = await response.aread()
+                log.error(
+                    "Stream error {status}: {body}",
+                    status=response.status_code,
+                    body=body[:500],
+                )
+                raise LLMError(f"OpenRouter stream returned status {response.status_code}.")
 
-                async for line in response.aiter_lines():
-                    if not line.startswith("data: "):
-                        continue
-                    chunk_str = line[6:].strip()
-                    if chunk_str == "[DONE]":
-                        break
-                    try:
-                        chunk = orjson.loads(chunk_str)
-                        delta = chunk["choices"][0].get("delta", {})
-                        content = delta.get("content", "")
-                        if content:
-                            yield content
-                    except (orjson.JSONDecodeError, KeyError, IndexError):
-                        continue
+            async for line in response.aiter_lines():
+                if not line.startswith("data: "):
+                    continue
+                chunk_str = line[6:].strip()
+                if chunk_str == "[DONE]":
+                    break
+                try:
+                    chunk = orjson.loads(chunk_str)
+                    delta = chunk["choices"][0].get("delta", {})
+                    content = delta.get("content", "")
+                    if content:
+                        yield content
+                except (orjson.JSONDecodeError, KeyError, IndexError):
+                    continue

@@ -71,6 +71,7 @@ class DataDocument(BaseModel):
 
 # ─── Field extraction helpers ────────────────────────────────────
 
+
 def _first_str(data: dict[str, Any], *keys: str) -> str | None:
     """Return the first non-empty string found under any of ``keys``."""
     for key in keys:
@@ -141,6 +142,7 @@ def _flatten_text(value: Any, seen: set[int] | None = None) -> str:
 
 # ─── Normalisation ───────────────────────────────────────────────
 
+
 def normalize_document(
     source: str,
     file: str,
@@ -179,7 +181,7 @@ def normalize_document(
         number = None
 
     doc_id_raw = str(number) if number else title
-    doc_id = hashlib.md5(f"{source}:{doc_id_raw}".encode("utf-8")).hexdigest()[:16]
+    doc_id = hashlib.md5(f"{source}:{doc_id_raw}".encode()).hexdigest()[:16]
 
     tags = _first_list(raw, "tags", "topics", "categories", "subtopics", "keywords")
     difficulty = _first_str(raw, "difficulty", "level")
@@ -190,11 +192,31 @@ def normalize_document(
     # context builder (hints, common_mistakes, similar_problems, ...).
     known = {"title", "name", "problem_name", "problem", "topic_name", "topic"}
     known |= {
-        "description", "problem_statement", "statement", "content", "overview",
-        "summary", "about", "body", "number", "problem_number", "id",
-        "tags", "topics", "categories", "subtopics", "keywords",
-        "difficulty", "level", "pattern", "patterns", "primary_pattern",
-        "algorithm", "algorithms", "approach", "technique",
+        "description",
+        "problem_statement",
+        "statement",
+        "content",
+        "overview",
+        "summary",
+        "about",
+        "body",
+        "number",
+        "problem_number",
+        "id",
+        "tags",
+        "topics",
+        "categories",
+        "subtopics",
+        "keywords",
+        "difficulty",
+        "level",
+        "pattern",
+        "patterns",
+        "primary_pattern",
+        "algorithm",
+        "algorithms",
+        "approach",
+        "technique",
     }
     sections = {k: v for k, v in raw.items() if k not in known}
 
@@ -224,13 +246,14 @@ def normalize_document(
         tags=tags,
         pattern=pattern,
         algorithm=algorithm,
-        description=description,
+        description=description or "",
         sections=sections,
         index_text=index_text,
     )
 
 
 # ─── Knowledge base ──────────────────────────────────────────────
+
 
 class KnowledgeBase:
     """In-memory repository of every valid JSON document in the data dir."""
@@ -278,7 +301,9 @@ class KnowledgeBase:
                         log.warning("Skipping non-object entry in {path}", path=filepath)
                         skipped_count += 1
                         continue
-                    doc = normalize_document(category, str(filepath.relative_to(self._data_dir)), entry)
+                    doc = normalize_document(
+                        category, str(filepath.relative_to(self._data_dir)), entry
+                    )
                     if doc is None:
                         skipped_count += 1
                         continue
@@ -316,7 +341,7 @@ class KnowledgeBase:
             log.warning("Could not read {path}: {exc}", path=filepath, exc=exc)
             return None
 
-        if data is None or data == {} and category != "roadmaps":
+        if data is None or (data == {} and category != "roadmaps"):
             log.warning("Empty JSON payload in {path}", path=filepath)
             return None
         return data

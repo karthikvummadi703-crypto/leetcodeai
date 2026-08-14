@@ -14,39 +14,38 @@ PATCH  /chat/{id}    — Rename a conversation.
 from __future__ import annotations
 
 import orjson
-
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
+from app.agent import Agent
 from app.auth import get_current_user
+from app.core import get_logger
+from app.core.rate_limit import enforce_rate_limit
 from app.schemas import (
+    ChatHistoryResponse,
     ChatRequest,
     ChatResponse,
+    ConversationDetailResponse,
+    DeleteChatResponse,
+    MessageRole,
     NewChatRequest,
     NewChatResponse,
-    ChatHistoryResponse,
-    DeleteChatResponse,
     RenameChatRequest,
     RenameChatResponse,
-    ConversationDetailResponse,
     SearchChatsResponse,
     TruncateResponse,
     UserProfile,
-    MessageRole,
 )
 from app.services.conversation_memory import (
-    create_conversation,
-    load_conversation,
     append_message,
-    list_conversations,
+    create_conversation,
     delete_conversation,
+    list_conversations,
+    load_conversation,
     rename_conversation,
     search_conversations,
     truncate_last_turn,
 )
-from app.agent import Agent
-from app.core import get_logger
-from app.core.rate_limit import enforce_rate_limit
 
 log = get_logger("api.chat")
 
@@ -57,6 +56,7 @@ _agent = Agent()
 
 
 # ── POST /chat ────────────────────────────────────────────────
+
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat(
@@ -77,6 +77,7 @@ async def chat(
 
     # Streaming path.
     if body.stream:
+
         async def event_generator():
             full_response = ""
             try:
@@ -112,6 +113,7 @@ async def chat(
 
 # ── POST /new-chat ────────────────────────────────────────────
 
+
 @router.post("/new-chat", response_model=NewChatResponse)
 async def new_chat(
     body: NewChatRequest,
@@ -124,6 +126,7 @@ async def new_chat(
 
 # ── GET /chat-history ─────────────────────────────────────────
 
+
 @router.get("/chat-history", response_model=ChatHistoryResponse)
 async def chat_history(user: UserProfile = Depends(get_current_user)):
     """List all conversations for the authenticated user."""
@@ -134,6 +137,7 @@ async def chat_history(user: UserProfile = Depends(get_current_user)):
 # ── GET /chat/search ────────────────────────────────────────────
 # Registered before /chat/{conversation_id} so the literal segment
 # wins the route match.
+
 
 @router.get("/chat/search", response_model=SearchChatsResponse)
 async def search_chats(
@@ -147,6 +151,7 @@ async def search_chats(
 
 # ── GET /chat/{id} ──────────────────────────────────────────────
 
+
 @router.get("/chat/{conversation_id}", response_model=ConversationDetailResponse)
 async def get_conversation(
     conversation_id: str,
@@ -158,6 +163,7 @@ async def get_conversation(
 
 
 # ── POST /chat/{id}/regenerate ──────────────────────────────────
+
 
 @router.post("/chat/{conversation_id}/regenerate", response_model=TruncateResponse)
 async def regenerate_chat(
@@ -174,6 +180,7 @@ async def regenerate_chat(
 
 # ── DELETE /chat/{id} ─────────────────────────────────────────
 
+
 @router.delete("/chat/{conversation_id}", response_model=DeleteChatResponse)
 async def delete_chat(
     conversation_id: str,
@@ -185,6 +192,7 @@ async def delete_chat(
 
 
 # ── PATCH /chat/{id} ──────────────────────────────────────────
+
 
 @router.patch("/chat/{conversation_id}", response_model=RenameChatResponse)
 async def rename_chat(

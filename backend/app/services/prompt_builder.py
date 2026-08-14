@@ -19,8 +19,8 @@ from app.schemas import Conversation
 
 log = get_logger("prompt_builder")
 
-MAX_HISTORY_TURNS = 10        # last N user/assistant turns included
-MAX_CONTEXT_CHARS = 6_000     # cap for the RAG context block
+MAX_HISTORY_TURNS = 10  # last N user/assistant turns included
+MAX_CONTEXT_CHARS = 6_000  # cap for the RAG context block
 
 
 def build_context_block(rag_result: RAGResult | None) -> str:
@@ -50,7 +50,11 @@ def build_context_block(rag_result: RAGResult | None) -> str:
         text = chunk.content.strip()
         if not text:
             continue
-        if used + len(text) + 2 > MAX_CONTEXT_CHARS:
+        remaining = MAX_CONTEXT_CHARS - used
+        if len(text) + 2 > remaining:
+            if used == 0 and remaining > 2:
+                # A single oversized document is truncated, never dropped.
+                sections.append(text[: remaining - 2])
             break
         sections.append(text)
         used += len(text) + 2

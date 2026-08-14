@@ -4,7 +4,6 @@ Configuration module — loads and validates all environment variables.
 
 from __future__ import annotations
 
-import os
 from functools import lru_cache
 from pathlib import Path
 
@@ -37,18 +36,25 @@ class Settings(BaseSettings):
     # --- Firebase ---
     firebase_project_id: str = Field(default="", description="Firebase project ID")
     firebase_client_email: str = Field(default="", description="Firebase service-account email")
-    firebase_private_key: str = Field(default="", description="Firebase service-account private key (PEM)")
+    firebase_private_key: str = Field(
+        default="", description="Firebase service-account private key (PEM)"
+    )
 
     # --- App ---
     app_env: str = Field(default="development", description="development | staging | production")
     log_level: str = Field(default="DEBUG", description="Loguru log level")
     backend_url: str = Field(default="http://localhost:8000")
-    frontend_url: str = Field(default="http://localhost:5173", description="CORS origin(s); comma-separated for multiple (e.g. Firebase Hosting .web.app + .firebaseapp.com)")
+    frontend_url: str = Field(
+        default="http://localhost:5173",
+        description="CORS origin(s); comma-separated for multiple (e.g. Firebase Hosting .web.app + .firebaseapp.com)",
+    )
 
     # --- Rate limiting ---
     rate_limit_enabled: bool = Field(default=True, description="Enable per-user rate limiting")
     rate_limit_max_requests: int = Field(default=20, description="Max requests per window per user")
-    rate_limit_window_seconds: float = Field(default=60.0, description="Rate-limit window length (seconds)")
+    rate_limit_window_seconds: float = Field(
+        default=60.0, description="Rate-limit window length (seconds)"
+    )
 
     # --- LeetCode account integration ---
     leetcode_cache_ttl_seconds: float = Field(

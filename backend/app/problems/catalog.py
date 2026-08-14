@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import json
 import re
-from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -90,7 +89,19 @@ class ProblemCatalog:
             self._loaded = True
             return self._problems
 
-        self._problems = [Problem(**entry) for entry in raw if isinstance(entry, dict)]
+        problems: list[Problem] = []
+        for entry in raw:
+            if not isinstance(entry, dict):
+                continue
+            entry = dict(entry)
+            acceptance = entry.get("acceptance")
+            # The catalog file stores LeetCode's raw acRate (a percentage
+            # like 57.9766). Normalise to the documented 0..1 fraction here
+            # so display code and the recommender can treat it consistently.
+            if isinstance(acceptance, (int, float)) and acceptance > 1:
+                entry["acceptance"] = round(acceptance / 100.0, 4)
+            problems.append(Problem(**entry))
+        self._problems = problems
         self._by_number = {p.number: p for p in self._problems}
         self._by_slug = {p.title_slug: p for p in self._problems}
         self._loaded = True

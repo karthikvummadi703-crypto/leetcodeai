@@ -38,7 +38,7 @@ def _as_lines(value: Any) -> list[str]:
         return []
     if isinstance(value, str):
         lines = [line.strip() for line in value.split("\n") if line.strip()]
-        return lines if len(lines) > 1 else lines
+        return lines
     if isinstance(value, list):
         return [str(item).strip() for item in value if str(item).strip()]
     if isinstance(value, dict):

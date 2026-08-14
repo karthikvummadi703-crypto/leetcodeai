@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 
 class LeetCodeLinkRequest(BaseModel):
     """Store the user's LeetCode profile link or username."""
+
     username: str = Field(
         ...,
         min_length=1,
@@ -27,6 +28,7 @@ class LeetCodeLinkResponse(BaseModel):
 
 class LeetCodeProfileSummary(BaseModel):
     """Public profile + solved counts."""
+
     username: str
     real_name: str | None = None
     avatar: str | None = None

@@ -7,8 +7,8 @@ and concatenates them into a single system prompt.
 
 from __future__ import annotations
 
-from pathlib import Path
 from functools import lru_cache
+from pathlib import Path
 
 from app.core import get_logger
 
@@ -42,8 +42,14 @@ def load_system_prompt() -> str:
         content = filepath.read_text(encoding="utf-8").strip()
         if content:
             parts.append(content)
-            log.debug("Loaded prompt: {filename} ({chars} chars)", filename=filename, chars=len(content))
+            log.debug(
+                "Loaded prompt: {filename} ({chars} chars)", filename=filename, chars=len(content)
+            )
 
     combined = "\n\n---\n\n".join(parts)
-    log.info("System prompt assembled: {total} chars from {count} files", total=len(combined), count=len(parts))
+    log.info(
+        "System prompt assembled: {total} chars from {count} files",
+        total=len(combined),
+        count=len(parts),
+    )
     return combined

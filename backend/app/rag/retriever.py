@@ -61,26 +61,76 @@ def tokenize(text: str) -> list[str]:
 
 # English + domain stop words removed from the query before scoring.
 _STOP_WORDS = {
-    "a", "an", "the", "of", "for", "and", "or", "with", "to", "in", "on",
-    "is", "are", "was", "were", "be", "am", "what", "how", "why", "when",
-    "where", "who", "which", "please", "explain", "help", "me", "my", "i",
-    "you", "it", "this", "that", "these", "those", "can", "could", "would",
-    "should", "want", "need", "tell", "question", "related", "like", "stuck",
-    "step", "by", "into", "does", "do", "get", "got", "give", "given",
+    "a",
+    "an",
+    "the",
+    "of",
+    "for",
+    "and",
+    "or",
+    "with",
+    "to",
+    "in",
+    "on",
+    "is",
+    "are",
+    "was",
+    "were",
+    "be",
+    "am",
+    "what",
+    "how",
+    "why",
+    "when",
+    "where",
+    "who",
+    "which",
+    "please",
+    "explain",
+    "help",
+    "me",
+    "my",
+    "i",
+    "you",
+    "it",
+    "this",
+    "that",
+    "these",
+    "those",
+    "can",
+    "could",
+    "would",
+    "should",
+    "want",
+    "need",
+    "tell",
+    "question",
+    "related",
+    "like",
+    "stuck",
+    "step",
+    "by",
+    "into",
+    "does",
+    "do",
+    "get",
+    "got",
+    "give",
+    "given",
 }
 
 
 # ─── Scoring ─────────────────────────────────────────────────────
 
 # Field weights — structured matches rank far above bare body keywords.
-W_NUMBER = 120      # exact problem number
+W_NUMBER = 120  # exact problem number
 W_TITLE_EXACT = 90  # whole indexed title contains the query phrase
 W_TITLE_TOKEN = 45  # query token matches a title token
-W_PATTERN = 35      # query token matches the pattern name
-W_ALGORITHM = 35    # query token matches the algorithm name
-W_TAG = 30          # query token matches a tag
-W_DIFFICULTY = 12   # query token matches the difficulty label
-W_BODY = 4          # query token appears anywhere in the body
+W_PATTERN = 35  # query token matches the pattern name
+W_ALGORITHM = 35  # query token matches the algorithm name
+W_TAG = 30  # query token matches a tag
+W_DIFFICULTY = 12  # query token matches the difficulty label
+W_BODY = 4  # query token appears anywhere in the body
 
 
 def _score_doc(doc: DataDocument, terms: list[str]) -> float:
@@ -142,6 +192,7 @@ def _query_terms(query: str) -> list[str]:
 
 
 # ─── Retrieval ───────────────────────────────────────────────────
+
 
 def _format_metadata(doc: DataDocument) -> dict:
     """Build a small, safe metadata dict for a document."""
@@ -213,6 +264,7 @@ def retrieve(
 
     # Fall back/supplement with search from the full LeetCode catalog of 4,000+ problems.
     from app.problems import get_catalog
+
     catalog = get_catalog()
     catalog_matches = catalog.search(query, limit=top_k)
     has_digit = any(t.isdigit() for t in terms)
@@ -222,7 +274,7 @@ def retrieve(
         # Avoid duplicate if already fetched from local RAG documents
         if any(c.metadata.get("number") == problem.number for c in chunks):
             continue
-        
+
         # Avoid generic false positives by requiring a problem number
         # or at least 2 matching tokens in the problem title.
         title_tokens = set(tokenize(problem.title))
@@ -230,7 +282,9 @@ def retrieve(
         if not (has_digit or len(matched_title_tokens) >= 2):
             continue
 
-        acceptance_str = f"{problem.acceptance * 100:.1f}%" if problem.acceptance is not None else "—"
+        acceptance_str = (
+            f"{problem.acceptance * 100:.1f}%" if problem.acceptance is not None else "—"
+        )
         content = (
             f"### LeetCode Catalog Entry: {problem.title} (#{problem.number})\n"
             f"Difficulty: {problem.difficulty}\n"
@@ -251,7 +305,7 @@ def retrieve(
                     "difficulty": problem.difficulty,
                     "number": problem.number,
                     "tags": problem.topics,
-                }
+                },
             )
         )
 

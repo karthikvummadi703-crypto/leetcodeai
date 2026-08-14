@@ -13,6 +13,7 @@ gracefully instead of crashing.
 
 from __future__ import annotations
 
+import time as _time
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -41,6 +42,7 @@ class LeetCodeRateLimitError(LeetCodeError):
 
 # ─── Data models ───────────────────────────────────────────────────
 
+
 @dataclass
 class DifficultyBreakdown:
     easy: int = 0
@@ -48,7 +50,7 @@ class DifficultyBreakdown:
     hard: int = 0
 
     @classmethod
-    def from_count_list(cls, items: list[dict[str, Any]]) -> "DifficultyBreakdown":
+    def from_count_list(cls, items: list[dict[str, Any]]) -> DifficultyBreakdown:
         counts = DifficultyBreakdown()
         for item in items or []:
             difficulty = (item.get("difficulty") or "").lower()
@@ -84,7 +86,7 @@ class RecentSubmission:
     timestamp: int
 
     @classmethod
-    def from_raw(cls, raw: dict[str, Any]) -> "RecentSubmission":
+    def from_raw(cls, raw: dict[str, Any]) -> RecentSubmission:
         return cls(
             id=str(raw.get("id", "")),
             title=raw.get("title", ""),
@@ -162,10 +164,13 @@ query userContestRankingInfo($username: String!) {
 
 # ─── Client ────────────────────────────────────────────────────────
 
+
 class LeetCodeClient:
     """Thin async wrapper around LeetCode's public GraphQL endpoint."""
 
-    def __init__(self, base_url: str = LEETCODE_GRAPHQL_URL, timeout: float = DEFAULT_TIMEOUT) -> None:
+    def __init__(
+        self, base_url: str = LEETCODE_GRAPHQL_URL, timeout: float = DEFAULT_TIMEOUT
+    ) -> None:
         self._base_url = base_url
         self._timeout = timeout
 
@@ -188,7 +193,9 @@ class LeetCodeClient:
             raise LeetCodeError(f"LeetCode request failed: {exc}") from exc
 
         if response.status_code == 429:
-            raise LeetCodeRateLimitError("LeetCode is rate-limiting requests. Please try again later.")
+            raise LeetCodeRateLimitError(
+                "LeetCode is rate-limiting requests. Please try again later."
+            )
         if response.status_code >= 500:
             raise LeetCodeError(f"LeetCode returned status {response.status_code}.")
 
@@ -200,7 +207,9 @@ class LeetCodeClient:
         if payload.get("errors"):
             message = payload["errors"][0].get("message", "unknown error")
             if "does not exist" in message or "doesn't exist" in message:
-                raise UserNotFoundError(variables.get("username") or variables.get("userSlug") or "user")
+                raise UserNotFoundError(
+                    variables.get("username") or variables.get("userSlug") or "user"
+                )
             log.warning("LeetCode GraphQL error: {message}", message=message)
             raise LeetCodeError(f"LeetCode GraphQL error: {message}")
 
@@ -261,8 +270,12 @@ class LeetCodeClient:
         )
         submissions = data.get("recentAcSubmissionList") or []
         return [
-            {"id": s.get("id", ""), "title": s.get("title", ""),
-             "title_slug": s.get("titleSlug", ""), "timestamp": int(s.get("timestamp") or 0)}
+            {
+                "id": s.get("id", ""),
+                "title": s.get("title", ""),
+                "title_slug": s.get("titleSlug", ""),
+                "timestamp": int(s.get("timestamp") or 0),
+            }
             for s in submissions
         ]
 
@@ -272,7 +285,10 @@ class LeetCodeClient:
         matched = data.get("matchedUser") or {}
         counts = matched.get("languageProblemCount") or []
         return [
-            {"language": item.get("languageName"), "problems_solved": int(item.get("problemsSolved") or 0)}
+            {
+                "language": item.get("languageName"),
+                "problems_solved": int(item.get("problemsSolved") or 0),
+            }
             for item in counts
             if item.get("problemsSolved")
         ]
@@ -322,8 +338,6 @@ class LeetCodeClient:
 
 
 # ─── Snapshot cache (TTL) ──────────────────────────────────────────
-
-import time as _time  # noqa: E402  (imported after class for clarity)
 
 _snapshot_cache: dict[str, tuple[float, dict[str, Any]]] = {}
 

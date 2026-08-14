@@ -45,7 +45,9 @@ def build_account_context(
             f"attended {contest.get('contests_attended', 0)} contests)"
         )
     if languages:
-        top_langs = sorted(languages, key=lambda item: item.get("problems_solved", 0), reverse=True)[:3]
+        top_langs = sorted(
+            languages, key=lambda item: item.get("problems_solved", 0), reverse=True
+        )[:3]
         lang_text = ", ".join(
             f"{item['language']} ({item['problems_solved']})" for item in top_langs
         )
@@ -59,7 +61,9 @@ def build_account_context(
     if recommendations:
         lines.append("")
         lines.append("### Recommended next problems (from the local catalog)")
-        lines.append("These are unsolved problems chosen by the recommendation engine — use them to ground your suggestions:")
+        lines.append(
+            "These are unsolved problems chosen by the recommendation engine — use them to ground your suggestions:"
+        )
         for problem in recommendations:
             topics = ", ".join(problem.get("topics") or []) or "—"
             lines.append(

@@ -13,10 +13,10 @@ never reads or writes another user's data.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
-from app.core import NotFoundError, ForbiddenError, get_logger
+from app.core import ForbiddenError, NotFoundError, get_logger
 from app.schemas import (
     Conversation,
     ConversationListItem,
@@ -31,7 +31,7 @@ log = get_logger("conversation_memory")
 
 def _utcnow() -> datetime:
     """Timezone-aware UTC now (Firestore requires aware datetimes)."""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def generate_title(text: str, max_len: int = 40) -> str:
@@ -52,6 +52,7 @@ def generate_title(text: str, max_len: int = 40) -> str:
 # ──────────────────────────────────────────────
 # In-memory store (fallback for dev + tests)
 # ──────────────────────────────────────────────
+
 
 class InMemoryStore:
     """Keeps conversations in a dict keyed by user_id."""
@@ -138,8 +139,11 @@ class InMemoryStore:
         """Drop the final user message and everything after it."""
         conv = self.load_conversation(user_id, conversation_id)
         last_user = next(
-            (i for i in range(len(conv.messages) - 1, -1, -1)
-             if conv.messages[i].role == MessageRole.USER),
+            (
+                i
+                for i in range(len(conv.messages) - 1, -1, -1)
+                if conv.messages[i].role == MessageRole.USER
+            ),
             None,
         )
         if last_user is not None:
@@ -198,16 +202,24 @@ class InMemoryStore:
                 "created_at": _utcnow(),
             }
         )
-        log.info("Feedback from {uid}: conv={cid} msg={mid} rating={r}",
-                 uid=user_id, cid=conversation_id, mid=message_id, r=rating)
+        log.info(
+            "Feedback from {uid}: conv={cid} msg={mid} rating={r}",
+            uid=user_id,
+            cid=conversation_id,
+            mid=message_id,
+            r=rating,
+        )
         return feedback_id
 
     # -- LeetCode account linking --------------------------------
 
     def set_leetcode_username(self, user_id: str, username: str) -> str:
         self._leetcode_links[user_id] = username.strip()
-        log.info("Linked LeetCode username '{username}' for user {uid}",
-                 username=username.strip(), uid=user_id)
+        log.info(
+            "Linked LeetCode username '{username}' for user {uid}",
+            username=username.strip(),
+            uid=user_id,
+        )
         return username.strip()
 
     def get_leetcode_username(self, user_id: str) -> str | None:
@@ -221,6 +233,7 @@ class InMemoryStore:
 # ──────────────────────────────────────────────
 # Firestore store (production)
 # ──────────────────────────────────────────────
+
 
 class FirestoreStore:
     """Persists conversations to Cloud Firestore, scoped by user UID."""
@@ -447,8 +460,13 @@ class FirestoreStore:
                 "created_at": _utcnow(),
             }
         )
-        log.info("Feedback from {uid}: conv={cid} msg={mid} rating={r}",
-                 uid=user_id, cid=conversation_id, mid=message_id, r=rating)
+        log.info(
+            "Feedback from {uid}: conv={cid} msg={mid} rating={r}",
+            uid=user_id,
+            cid=conversation_id,
+            mid=message_id,
+            r=rating,
+        )
         return feedback_id
 
     # -- LeetCode account linking --------------------------------
@@ -460,8 +478,9 @@ class FirestoreStore:
             ref.update({"leetcode_username": username})
         else:
             ref.set({"leetcode_username": username, "created_at": _utcnow()})
-        log.info("Linked LeetCode username '{username}' for user {uid}",
-                 username=username, uid=user_id)
+        log.info(
+            "Linked LeetCode username '{username}' for user {uid}", username=username, uid=user_id
+        )
         return username
 
     def get_leetcode_username(self, user_id: str) -> str | None:
@@ -481,8 +500,10 @@ class FirestoreStore:
 # Store selection
 # ──────────────────────────────────────────────
 
+
 def _build_store() -> InMemoryStore | FirestoreStore:
     import os
+
     from app.config import get_settings
 
     # Force the in-memory store (used by the test suite — never touch Firestore).
@@ -506,7 +527,7 @@ def _build_store() -> InMemoryStore | FirestoreStore:
         store = FirestoreStore()
         log.info("Using Cloud Firestore conversation store")
         return store
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - fall back to the in-memory store on any init failure
         log.error("Failed to initialise Firestore store: {exc}", exc=exc)
         return InMemoryStore()
 
@@ -517,6 +538,7 @@ _store: InMemoryStore | FirestoreStore = _build_store()
 # ──────────────────────────────────────────────
 # Module-level API (kept for backwards compatibility)
 # ──────────────────────────────────────────────
+
 
 def create_conversation(user_id: str, title: str = "New Chat") -> Conversation:
     return _store.create_conversation(user_id, title)

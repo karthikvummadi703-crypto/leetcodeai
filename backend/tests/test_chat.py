@@ -4,15 +4,14 @@ Integration tests for the chat endpoint and the agent orchestration.
 
 import orjson
 import pytest
-from httpx import AsyncClient, ASGITransport
-
-from main import app
 from app.agent import Agent
 from app.agent.decision_engine import OFF_TOPIC_MESSAGE
 from app.schemas import Conversation, Message, MessageRole
-
+from httpx import ASGITransport, AsyncClient
+from main import app
 
 # ── Auth protection ──────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_chat_requires_authentication():
@@ -34,6 +33,7 @@ async def test_new_chat_requires_authentication():
 
 
 # ── Agent with a stubbed LLM ─────────────────────────────────────
+
 
 class StubLLM:
     """Fake OpenRouter client that records the prompt and returns canned text."""
@@ -115,7 +115,11 @@ async def test_agent_grounds_keyword_followup_in_prior_topic():
     # must still be grounded in the previous topic's documents.
     history = [
         Message(id="u0", role=MessageRole.USER, content="What is the Two Sum problem?"),
-        Message(id="a0", role=MessageRole.ASSISTANT, content="It asks to find two numbers that sum to target."),
+        Message(
+            id="a0",
+            role=MessageRole.ASSISTANT,
+            content="It asks to find two numbers that sum to target.",
+        ),
     ]
     conv = Conversation(id="conv-1", user_id="u1", messages=history)
 
@@ -131,13 +135,17 @@ async def test_agent_streaming_off_topic():
     llm = StubLLM()
     agent = Agent(llm_client=llm)
 
-    chunks = [chunk async for chunk in agent.run_stream(_conversation(), "Who won the cricket match yesterday?")]
+    chunks = [
+        chunk
+        async for chunk in agent.run_stream(_conversation(), "Who won the cricket match yesterday?")
+    ]
 
     assert chunks == [OFF_TOPIC_MESSAGE]
     assert llm.call_count == 0
 
 
 # ── Streaming endpoint (SSE) ────────────────────────────────────
+
 
 class StubAgent:
     """Fake agent that streams known chunks, used for endpoint-level tests."""
@@ -166,8 +174,9 @@ async def test_chat_streaming_emits_json_sse(monkeypatch):
 
     transport = ASGITransport(app=app)
     try:
-        async with AsyncClient(transport=transport, base_url="http://test") as client:
-            async with client.stream(
+        async with (
+            AsyncClient(transport=transport, base_url="http://test") as client,
+            client.stream(
                 "POST",
                 "/api/chat",
                 json={
@@ -175,8 +184,9 @@ async def test_chat_streaming_emits_json_sse(monkeypatch):
                     "message": "hello world",
                     "stream": True,
                 },
-            ) as response:
-                body = (await response.aread()).decode("utf-8")
+            ) as response,
+        ):
+            body = (await response.aread()).decode("utf-8")
 
         assert response.status_code == 200
         assert "data: " in body

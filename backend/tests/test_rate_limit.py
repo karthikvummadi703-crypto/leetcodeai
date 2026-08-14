@@ -6,12 +6,11 @@ import asyncio
 import time
 
 import pytest
-from httpx import AsyncClient, ASGITransport
-
 from app.core.rate_limit import RateLimiter, get_rate_limiter
-
+from httpx import ASGITransport, AsyncClient
 
 # ── Unit tests: RateLimiter ──────────────────────────────────────
+
 
 def test_limiter_allows_within_budget():
     limiter = RateLimiter(max_requests=3, window_seconds=60)
@@ -51,13 +50,14 @@ def test_disabled_limiter_always_allows():
 
 # ── Endpoint integration: 429 on budget exhaustion ───────────────
 
+
 @pytest.mark.asyncio
 async def test_chat_endpoint_returns_429_when_rate_limited(monkeypatch):
-    from main import app
     from app.api import chat as chat_module
     from app.auth import get_current_user
     from app.schemas import UserProfile
     from app.services.conversation_memory import create_conversation
+    from main import app
 
     class StubAgent:
         async def run(self, conversation, user_message):

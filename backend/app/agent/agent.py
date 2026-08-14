@@ -21,32 +21,34 @@ transparently falls back to LLM_ONLY and the model answers from knowledge.
 from __future__ import annotations
 
 import time
-from enum import Enum
-from typing import AsyncIterator
+from collections.abc import AsyncIterator
+from enum import StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
-from app.core import get_logger
+from app.agent.decision_engine import (
+    OFF_TOPIC_MESSAGE,
+    Intent,
+    _enrich_query,
+    decide,
+    prior_technical_topic,
+)
+from app.core import LLMError, get_logger
 from app.llm import OpenRouterClient
-from app.rag import retrieve, RAGResult
+from app.rag import RAGResult, retrieve
 from app.schemas import Conversation
 from app.services.prompt_builder import build_messages
 from app.services.prompt_loader import load_system_prompt
-from app.agent.decision_engine import (
-    decide,
-    prior_technical_topic,
-    _enrich_query,
-    OFF_TOPIC_MESSAGE,
-    Intent,
-)
 
 log = get_logger("agent")
 
 
 # ─── Decision types ──────────────────────────────────────────────
 
-class AgentStrategy(str, Enum):
+
+class AgentStrategy(StrEnum):
     """The strategy the agent chose for a particular request."""
+
     LLM_ONLY = "llm_only"
     RAG_ONLY = "rag_only"
     RAG_PLUS_LLM = "rag_plus_llm"
@@ -55,6 +57,7 @@ class AgentStrategy(str, Enum):
 
 class AgentResponse(BaseModel):
     """Structured output from the agent."""
+
     content: str
     strategy: AgentStrategy
     rag_result: RAGResult | None = None
@@ -64,6 +67,7 @@ class AgentResponse(BaseModel):
 
 
 # ─── Agent class ──────────────────────────────────────────────────
+
 
 class Agent:
     """
@@ -99,8 +103,7 @@ class Agent:
         intent = decision.intent.value
         strategy = AgentStrategy(decision.strategy)
         log.info(
-            "Agent decision: intent={intent} strategy={strategy} "
-            "history_turns={turns}",
+            "Agent decision: intent={intent} strategy={strategy} history_turns={turns}",
             intent=intent,
             strategy=strategy.value,
             turns=len(conversation.messages),
@@ -176,8 +179,8 @@ class Agent:
             "1. Open **Settings** in the sidebar.\n"
             "2. Under **LeetCode account**, enter your username and press "
             "**Link account**.\n\n"
-            "Once linked, ask me things like *\"analyze my solved problems\"* "
-            "or *\"what should I solve next?\"*"
+            'Once linked, ask me things like *"analyze my solved problems"* '
+            'or *"what should I solve next?"*'
         )
 
     async def _account_data(
@@ -190,9 +193,9 @@ class Agent:
         Returns ``(username, snapshot, recommendations)``. When no account is
         linked, ``username`` is ``None``.
         """
-        from app.services.conversation_memory import get_leetcode_username
         from app.leetcode.client import get_leetcode_client
         from app.problems import get_catalog, recommend_next
+        from app.services.conversation_memory import get_leetcode_username
 
         username = get_leetcode_username(user_id)
         if not username:
@@ -223,7 +226,7 @@ class Agent:
         start = time.perf_counter()
         try:
             username, snapshot, recommendations = await self._account_data(conversation.user_id)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - degrade to a friendly message on any lookup failure
             log.warning("LeetCode account lookup failed: {exc}", exc=exc)
             return AgentResponse(
                 content=(
@@ -257,8 +260,7 @@ class Agent:
 
         model = self._llm.model
         log.info(
-            "Analysing LeetCode account: user={uid} username='{username}' "
-            "solved={solved}",
+            "Analysing LeetCode account: user={uid} username='{username}' solved={solved}",
             uid=conversation.user_id,
             username=username,
             solved=snapshot.get("accepted", {}).get("total", 0),
@@ -283,7 +285,7 @@ class Agent:
         start = time.perf_counter()
         try:
             username, snapshot, recommendations = await self._account_data(conversation.user_id)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - degrade to a friendly message on any lookup failure
             log.warning("LeetCode account lookup failed: {exc}", exc=exc)
             yield "I couldn't reach LeetCode to look at your account right now. Please try again in a moment."
             return
@@ -340,12 +342,24 @@ class Agent:
             model=model,
             strategy=strategy.value,
         )
-        content = await self._llm.complete(messages)
+        try:
+            content = await self._llm.complete(messages)
+        except LLMError as exc:
+            log.error("LLM completion failed: {exc}", exc=exc)
+            return AgentResponse(
+                content=(
+                    "I couldn't reach the AI service to answer that — please try again in a moment."
+                ),
+                strategy=strategy,
+                rag_result=rag_result if rag_result and rag_result.has_context else None,
+                latency_ms=int((time.perf_counter() - start) * 1000),
+                model=model,
+                intent=intent,
+            )
 
         elapsed = int((time.perf_counter() - start) * 1000)
         log.info(
-            "Agent completed in {ms}ms strategy={strategy} model='{model}' "
-            "content_len={len}",
+            "Agent completed in {ms}ms strategy={strategy} model='{model}' content_len={len}",
             ms=elapsed,
             strategy=strategy.value,
             model=model,
@@ -393,14 +407,22 @@ class Agent:
             model=model,
             strategy=strategy.value,
         )
-        async for chunk in self._llm.stream(messages):
-            streamed += len(chunk)
-            yield chunk
+        try:
+            async for chunk in self._llm.stream(messages):
+                streamed += len(chunk)
+                yield chunk
+        except LLMError as exc:
+            log.error("LLM stream failed: {exc}", exc=exc)
+            if streamed == 0:
+                yield (
+                    "I couldn't reach the AI service to answer that — please try again in a moment."
+                )
+            else:
+                yield "\n\n[The answer was cut off — please try again.]"
 
         elapsed = int((time.perf_counter() - start) * 1000)
         log.info(
-            "Stream finished in {ms}ms strategy={strategy} model={model} "
-            "chars={chars} status=done",
+            "Stream finished in {ms}ms strategy={strategy} model={model} chars={chars} status=done",
             ms=elapsed,
             strategy=strategy.value,
             model=model,

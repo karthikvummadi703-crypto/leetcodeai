@@ -1,5 +1,10 @@
 # LeetCode Guidance AI
 
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
+[![CI](https://github.com/karthikvummadi703-crypto/leetcodeai/actions/workflows/ci.yml/badge.svg)](https://github.com/karthikvummadi703-crypto/leetcodeai/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/karthikvummadi703-crypto/leetcodeai/actions/workflows/codeql.yml/badge.svg)](https://github.com/karthikvummadi703-crypto/leetcodeai/actions/workflows/codeql.yml)
+[![Python](https://img.shields.io/badge/python-3.13-blue)](backend/requirements.txt)
+
 Your personal Data Structures & Algorithms mentor. Ask about LeetCode
 problems, DSA concepts, algorithm patterns, complexity analysis, and
 interview prep — the AI guides you to the answer instead of just handing
@@ -80,6 +85,8 @@ Open <http://localhost:5173>.
 | Where     | Command                | Purpose                      |
 | --------- | ---------------------- | ---------------------------- |
 | backend   | `pytest -q`            | Run all backend tests        |
+| backend   | `ruff check .`         | Lint backend code            |
+| backend   | `mypy app`             | Type-check the backend       |
 | backend   | `uvicorn main:app --reload --port 8000` | Run API locally |
 | frontend  | `npm run dev`          | Dev server with HMR          |
 | frontend  | `npm run build`        | Type-check + production build |
@@ -177,3 +184,19 @@ firebase/
   firestore.indexes.json
 docs/                 # architecture, API, deployment docs
 ```
+
+## Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for
+setup instructions, coding standards and commit conventions. All
+contributors are expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Security
+
+Please report security vulnerabilities privately — see
+[SECURITY.md](SECURITY.md) for the policy and process. Never open a
+public issue for a security problem.
+
+## License
+
+Licensed under the [GNU General Public License v3.0](LICENSE).

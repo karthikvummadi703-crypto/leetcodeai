@@ -2,7 +2,7 @@
 Tests for the agent decision engine.
 """
 
-from app.agent.decision_engine import decide, Intent
+from app.agent.decision_engine import Intent, decide
 
 
 def test_greeting_routes_to_llm_only():

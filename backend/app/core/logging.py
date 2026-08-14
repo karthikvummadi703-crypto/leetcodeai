@@ -9,10 +9,14 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from loguru import logger
 
 from app.config import get_settings
+
+if TYPE_CHECKING:
+    from loguru import Record
 
 # Remove default Loguru handler so we can reconfigure.
 logger.remove()
@@ -22,7 +26,7 @@ _log_dir = Path(__file__).resolve().parent.parent.parent / "logs"
 _log_dir.mkdir(parents=True, exist_ok=True)
 
 
-def _sensitive_filter(record: dict) -> bool:
+def _sensitive_filter(record: Record) -> bool:
     """Prevent accidental logging of API keys."""
     msg = str(record.get("message", ""))
     if _settings.openrouter_api_key and _settings.openrouter_api_key in msg:

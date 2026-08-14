@@ -7,8 +7,9 @@ from __future__ import annotations
 from typing import Any
 
 import firebase_admin
-from firebase_admin import auth as firebase_auth, credentials
-from fastapi import Depends, Request
+from fastapi import Request
+from firebase_admin import auth as firebase_auth
+from firebase_admin import credentials
 
 from app.config import get_settings
 from app.core import AuthenticationError, get_logger
@@ -47,8 +48,10 @@ def _init_firebase() -> None:
     try:
         cred = credentials.Certificate(cred_dict)
         _firebase_app = firebase_admin.initialize_app(cred)
-        log.info("Firebase Admin SDK initialised for project {pid}", pid=settings.firebase_project_id)
-    except Exception as exc:
+        log.info(
+            "Firebase Admin SDK initialised for project {pid}", pid=settings.firebase_project_id
+        )
+    except Exception as exc:  # noqa: BLE001 - init failure is non-fatal (app still runs unauthenticated)
         log.error("Failed to initialise Firebase Admin SDK: {exc}", exc=exc)
 
 
@@ -77,14 +80,14 @@ def verify_token(id_token: str) -> dict[str, Any]:
         decoded = firebase_auth.verify_id_token(id_token, app=_firebase_app)
         return decoded
     except firebase_auth.ExpiredIdTokenError:
-        raise AuthenticationError("Token has expired. Please sign in again.")
+        raise AuthenticationError("Token has expired. Please sign in again.") from None
     except firebase_auth.RevokedIdTokenError:
-        raise AuthenticationError("Token has been revoked.")
+        raise AuthenticationError("Token has been revoked.") from None
     except firebase_auth.InvalidIdTokenError:
-        raise AuthenticationError("Invalid authentication token.")
+        raise AuthenticationError("Invalid authentication token.") from None
     except Exception as exc:
         log.error("Token verification failed: {exc}", exc=exc)
-        raise AuthenticationError("Authentication failed.")
+        raise AuthenticationError("Authentication failed.") from exc
 
 
 def _extract_bearer_token(request: Request) -> str:

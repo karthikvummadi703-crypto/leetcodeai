@@ -3,9 +3,8 @@ Tests for the JSON knowledge-base loader and retrieval engine.
 """
 
 import pytest
-
 from app.rag.loader import KnowledgeBase, normalize_document
-from app.rag.retriever import retrieve, RAGResult
+from app.rag.retriever import RAGResult, retrieve
 
 
 @pytest.fixture(scope="module")
@@ -24,7 +23,14 @@ def test_documents_are_normalised(kb):
     docs = kb.load()
     for doc in docs:
         assert doc.title
-        assert doc.source in {"leetcode", "patterns", "topics", "algorithms", "complexities", "roadmaps"}
+        assert doc.source in {
+            "leetcode",
+            "patterns",
+            "topics",
+            "algorithms",
+            "complexities",
+            "roadmaps",
+        }
         assert doc.index_text
 
 

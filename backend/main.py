@@ -7,18 +7,17 @@ Run with:
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
+from app.api import api_router
+from app.config import get_settings
+from app.core import get_logger, register_exception_handlers
+from app.middleware import RequestLoggingMiddleware
+from app.problems import warm_catalog
+from app.rag import warm_knowledge_base
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from app.config import get_settings
-from app.core import register_exception_handlers, get_logger
-from app.middleware import RequestLoggingMiddleware
-from app.api import api_router
-from app.rag import warm_knowledge_base
-from app.problems import warm_catalog
 
 log = get_logger("main")
 

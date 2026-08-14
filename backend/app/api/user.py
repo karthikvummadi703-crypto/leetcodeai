@@ -13,21 +13,23 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 
 from app.auth import get_current_user
+from app.core import get_logger
 from app.schemas import (
-    UserProfile,
-    ProfileResponse,
-    FeedbackRequest,
-    FeedbackResponse,
     DeleteAllResponse,
     ExportResponse,
+    FeedbackRequest,
+    FeedbackResponse,
+    ProfileResponse,
+    UserProfile,
 )
 from app.services.conversation_memory import (
-    sync_profile as persist_profile,
     delete_all_conversations,
     export_user_data,
     save_feedback,
 )
-from app.core import get_logger
+from app.services.conversation_memory import (
+    sync_profile as persist_profile,
+)
 
 log = get_logger("api.user")
 

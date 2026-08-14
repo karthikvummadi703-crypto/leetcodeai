@@ -2,24 +2,23 @@
 Unit tests for the conversation memory service.
 """
 
-from app.services.conversation_memory import (
-    create_conversation,
-    load_conversation,
-    append_message,
-    list_conversations,
-    delete_conversation,
-    rename_conversation,
-    generate_title,
-    search_conversations,
-    truncate_last_turn,
-    delete_all_conversations,
-    sync_profile,
-    save_feedback,
-)
-from app.schemas import MessageRole, UserProfile
-from app.core import NotFoundError
-
 import pytest
+from app.core import NotFoundError
+from app.schemas import MessageRole, UserProfile
+from app.services.conversation_memory import (
+    append_message,
+    create_conversation,
+    delete_all_conversations,
+    delete_conversation,
+    generate_title,
+    list_conversations,
+    load_conversation,
+    rename_conversation,
+    save_feedback,
+    search_conversations,
+    sync_profile,
+    truncate_last_turn,
+)
 
 
 def test_create_and_load():
@@ -71,6 +70,7 @@ def test_load_nonexistent_raises():
 
 # ── Title generation ────────────────────────────────────────────
 
+
 def test_generate_title_short_message():
     assert generate_title("Hello!") == "Hello!"
 
@@ -96,6 +96,7 @@ def test_first_user_message_autotitles_new_chat():
 
 # ── Search ──────────────────────────────────────────────────────
 
+
 def test_search_matches_title():
     uid = "search_user_1"
     conv = create_conversation(uid, "Two Sum Approach")
@@ -120,6 +121,7 @@ def test_search_no_match_returns_empty():
 
 # ── Regenerate (truncate last turn) ─────────────────────────────
 
+
 def test_truncate_last_turn_removes_pair():
     uid = "truncate_user"
     conv = create_conversation(uid, "Truncate")
@@ -136,6 +138,7 @@ def test_truncate_last_turn_removes_pair():
 
 
 # ── Delete all + profile + feedback ─────────────────────────────
+
 
 def test_delete_all_conversations():
     uid = "delete_all_user"

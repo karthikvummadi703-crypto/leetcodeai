@@ -18,7 +18,6 @@ Run standalone with:
 from __future__ import annotations
 
 import asyncio
-import json
 from typing import Any
 
 from app.core import get_logger
@@ -110,7 +109,10 @@ def create_server() -> Any:
             return f"Could not reach LeetCode: {exc}"
         if not submissions:
             return f"@{username} has no recent accepted submissions."
-        lines = [f"- {s['title']} — https://leetcode.com/problems/{s['title_slug']}/"]
+        lines = [
+            f"- {s['title']} — https://leetcode.com/problems/{s['title_slug']}/"
+            for s in submissions[:limit]
+        ]
         return f"## Recent accepted submissions for @{username}\n" + "\n".join(lines)
 
     @server.tool()
@@ -125,14 +127,12 @@ def create_server() -> Any:
             return f"Could not reach LeetCode: {exc}"
 
         accepted = snapshot["accepted"]
-        progress = snapshot.get("progress", {})
         languages = snapshot.get("languages") or []
         contest = snapshot.get("contest")
 
         lines = [
             f"## LeetCode analysis for @{username}",
-            f"- Solved: {accepted['total']} "
-            f"(Easy {accepted['easy']} / Medium {accepted['medium']} / Hard {accepted['hard']})",
+            f"- Solved: {accepted['total']} (Easy {accepted['easy']} / Medium {accepted['medium']} / Hard {accepted['hard']})",
         ]
         if contest:
             lines.append(
