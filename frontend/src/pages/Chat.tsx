@@ -58,24 +58,37 @@ import {
 
 interface Message extends ChatMessage {}
 
+const AiOrb = ({ isTyping = false }: { isTyping?: boolean }) => (
+  <div className="relative w-20 h-20 flex items-center justify-center">
+    <div className={`absolute inset-0 bg-blue-500/20 rounded-full blur-[20px] ${isTyping ? 'animate-pulse' : 'animate-orb'}`} />
+    <div className={`absolute inset-2 bg-blue-400/40 rounded-full blur-[10px] ${isTyping ? 'animate-bounce' : ''}`} />
+    <div className="relative z-10 w-10 h-10 bg-gradient-to-br from-[#4D82FF] to-[#9EBCFF] rounded-full shadow-[0_0_20px_rgba(77,130,255,0.8)] border border-white/20 flex items-center justify-center overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(255,255,255,0.2)_100%)]" />
+      <Bot className="h-5 w-5 text-white drop-shadow-md" />
+    </div>
+    {isTyping && (
+      <div className="absolute -inset-2 border border-blue-500/30 rounded-full animate-[spin_4s_linear_infinite]" />
+    )}
+  </div>
+);
+
 const HexLogo = ({ size = 44 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <linearGradient id="hexLogoChat" x1="0" y1="0" x2="64" y2="64">
-        <stop offset="0%" stopColor="#7c3aed"/>
-        <stop offset="100%" stopColor="#3b82f6"/>
+      <linearGradient id="chatHexGrad" x1="0" y1="0" x2="64" y2="64">
+        <stop offset="0%" stopColor="#4D82FF"/>
+        <stop offset="100%" stopColor="#9EBCFF"/>
       </linearGradient>
     </defs>
-    <path d="M32 2 L58 17 L58 47 L32 62 L6 47 L6 17 Z" fill="url(#hexLogoChat)" stroke="rgba(255,255,255,0.15)" strokeWidth="1"/>
+    <path d="M32 2 L58 17 L58 47 L32 62 L6 47 L6 17 Z" fill="url(#chatHexGrad)" stroke="rgba(255,255,255,0.15)" strokeWidth="1"/>
     <text x="32" y="42" textAnchor="middle" fontFamily="monospace" fontWeight="bold" fontSize="24" fill="white">&lt;/&gt;</text>
   </svg>
 );
 
 const CHIPS = [
-  { label: "Explain", prompt: "Can you explain this problem step-by-step?" },
-  { label: "Hint", prompt: "Give me a subtle hint to point me in the right direction." },
-  { label: "Optimal Solution", prompt: "Explain the optimal solution for this problem." },
-  { label: "Brute Force", prompt: "Explain the brute force approach first." },
+  { label: "Explain Step-by-Step", prompt: "Can you explain this problem step-by-step?" },
+  { label: "Subtle Hint", prompt: "Give me a subtle hint to point me in the right direction." },
+  { label: "Optimal Complexity", prompt: "Explain the optimal solution and its complexity." },
   { label: "Similar Problems", prompt: "What are some similar LeetCode problems I can practice?" },
 ];
 
@@ -94,26 +107,26 @@ const MessageBubble = memo(function MessageBubble({
     <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className={`flex gap-4 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+      transition={{ duration: 0.5, cubicBezier: [0.16, 1, 0.3, 1] }}
+      className={`flex gap-5 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
     >
       {msg.role === "assistant" && (
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30 mt-1">
-          <Bot className="h-5 w-5 text-primary" />
+        <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 mt-1 shadow-sm">
+          <Bot className="h-5 w-5 text-blue-400" />
         </div>
       )}
 
       <div
-        className={`max-w-[85%] rounded-2xl p-4 shadow-md ${
+        className={`max-w-[85%] rounded-[1.5rem] px-5 py-4 shadow-2xl transition-all ${
           msg.role === "user"
-            ? "bg-primary text-primary-foreground rounded-tr-sm"
-            : "glass-card border border-border/50 rounded-tl-sm"
+            ? "bg-blue-600 text-white rounded-tr-sm border border-blue-400/20"
+            : "glass-card border border-white/5 rounded-tl-sm text-white/90"
         }`}
       >
         {msg.role === "user" ? (
-          <div className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</div>
+          <div className="whitespace-pre-wrap text-sm leading-relaxed font-medium">{msg.content}</div>
         ) : (
-          <div className="prose prose-invert max-w-none text-foreground prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent">
+          <div className="prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent">
             <ReactMarkdown
               components={{
                 code({
@@ -126,24 +139,23 @@ const MessageBubble = memo(function MessageBubble({
                   if (match) {
                     const copyKey = msg.id + match[1];
                     return (
-                      <div className="relative mt-4 mb-4 rounded-xl overflow-hidden border border-border/50 shadow-lg">
-                        <div className="flex items-center justify-between px-4 py-2 bg-[#1e1e1e] border-b border-[#2d2d2d]">
-                          <span className="text-xs text-gray-400 font-mono font-semibold">{match[1]}</span>
+                      <div className="relative mt-5 mb-5 rounded-2xl overflow-hidden border border-white/5 bg-[#0D121E]/80 backdrop-blur-md shadow-2xl">
+                        <div className="flex items-center justify-between px-5 py-2.5 bg-white/[0.03] border-b border-white/5">
+                          <span className="text-[10px] text-white/40 font-bold tracking-[0.2em] uppercase">{match[1]}</span>
                           <button
                             type="button"
                             onClick={() => onCopy(code, copyKey)}
-                            aria-label="Copy code"
-                            className="text-gray-400 hover:text-gray-200 transition-colors flex items-center gap-1.5"
+                            className="text-white/30 hover:text-white transition-all flex items-center gap-2"
                           >
                             {copiedId === copyKey ? (
                               <>
-                                <Check className="h-3.5 w-3.5 text-green-500" />
-                                <span className="text-[10px] text-green-500 font-semibold">Copied</span>
+                                <Check className="h-3.5 w-3.5 text-green-400" />
+                                <span className="text-[10px] text-green-400 font-bold uppercase tracking-wider">Copied</span>
                               </>
                             ) : (
                               <>
                                 <Copy className="h-3.5 w-3.5" />
-                                <span className="text-[10px] font-semibold">Copy</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider">Copy</span>
                               </>
                             )}
                           </button>
@@ -153,7 +165,7 @@ const MessageBubble = memo(function MessageBubble({
                           style={vscDarkPlus}
                           language={match[1]}
                           PreTag="div"
-                          customStyle={{ margin: 0, borderRadius: 0, padding: "1rem", fontSize: "0.875rem" }}
+                          customStyle={{ margin: 0, borderRadius: 0, padding: "1.25rem", fontSize: "0.85rem", background: "transparent" }}
                         >
                           {code}
                         </SyntaxHighlighter>
@@ -161,7 +173,7 @@ const MessageBubble = memo(function MessageBubble({
                     );
                   }
                   return (
-                    <code {...props} className="bg-muted px-1.5 py-0.5 rounded-md text-primary font-mono text-xs font-semibold">
+                    <code {...props} className="bg-white/5 px-2 py-0.5 rounded-lg text-blue-300 font-mono text-xs font-bold border border-white/5">
                       {children}
                     </code>
                   );
@@ -171,15 +183,15 @@ const MessageBubble = memo(function MessageBubble({
               {msg.content}
             </ReactMarkdown>
             {msg.isStreaming && (
-              <span className="inline-block w-2 h-4 ml-1 bg-primary/70 animate-pulse align-middle" />
+              <span className="inline-block w-2 h-4 ml-1 bg-blue-500 shadow-[0_0_10px_rgba(77,130,255,0.8)] animate-pulse align-middle" />
             )}
           </div>
         )}
       </div>
 
       {msg.role === "user" && (
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center border border-secondary/30 mt-1">
-          <UserIcon className="h-5 w-5 text-secondary" />
+        <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 mt-1 shadow-sm">
+          <UserIcon className="h-5 w-5 text-white/40" />
         </div>
       )}
     </motion.div>
@@ -385,27 +397,27 @@ const Chat = () => {
     !messages.some(m => m.isStreaming && m.content.length > 0);
 
   return (
-    <div className="flex flex-col h-full bg-background relative overflow-hidden">
+    <div className="flex flex-col h-full bg-[#05070D] relative overflow-hidden">
       {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto pb-32 pt-4 px-4 md:px-8" aria-label="Chat messages">
+      <div className="flex-1 overflow-y-auto pb-40 pt-6 px-4 md:px-10 custom-scrollbar" aria-label="Chat messages">
         {loadingConversation ? (
           <div className="h-full flex items-center justify-center">
-            <Loader2 className="h-6 w-6 text-primary animate-spin" />
+            <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
           </div>
         ) : messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center max-w-3xl mx-auto text-center px-4">
+          <div className="h-full flex flex-col items-center justify-center max-w-3xl mx-auto text-center px-6">
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.4 }}
-              className="mb-8 flex flex-col items-center"
+              transition={{ duration: 0.8, cubicBezier: [0.16, 1, 0.3, 1] }}
+              className="mb-12 flex flex-col items-center"
             >
-              <div className="mb-4">
-                <HexLogo size={56} />
+              <div className="mb-8">
+                <AiOrb />
               </div>
-              <h1 className="text-3xl md:text-4xl font-extrabold mb-2 tracking-tight">LeetCode AI</h1>
-              <p className="text-muted-foreground text-sm max-w-md">
-                Your AI partner for cracking technical coding interviews, master algorithms & complexity analysis.
+              <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight text-white">LeetCode <span className="text-gradient">AI</span></h1>
+              <p className="text-white/40 text-sm max-w-md font-medium leading-relaxed">
+                Your elite algorithmic partner. Ask complex questions, request hints, and master coding patterns with 3D clarity.
               </p>
             </motion.div>
 
@@ -413,15 +425,15 @@ const Chat = () => {
             <motion.div 
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.2 }}
-              className="flex flex-wrap gap-2 justify-center max-w-2xl"
+              transition={{ duration: 0.8, delay: 0.3, cubicBezier: [0.16, 1, 0.3, 1] }}
+              className="flex flex-wrap gap-3 justify-center max-w-2xl"
             >
               {CHIPS.map((chip, idx) => (
                 <button
                   key={idx}
                   type="button"
                   onClick={() => setInput(chip.prompt)}
-                  className="px-4 py-2 text-xs font-semibold rounded-full border border-border/50 bg-card/60 hover:bg-primary/10 hover:border-primary/30 transition-all text-muted-foreground hover:text-foreground cursor-pointer shadow-sm"
+                  className="px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.15em] rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-blue-500/10 hover:border-blue-500/30 transition-all text-white/40 hover:text-white cursor-pointer shadow-lg"
                 >
                   {chip.label}
                 </button>
@@ -429,7 +441,7 @@ const Chat = () => {
             </motion.div>
           </div>
         ) : (
-          <div className="max-w-4xl mx-auto space-y-6 pb-4">
+          <div className="max-w-4xl mx-auto space-y-8 pb-10">
             <AnimatePresence initial={false}>
               {messages.map((msg) => (
                 <MessageBubble
@@ -442,15 +454,15 @@ const Chat = () => {
             </AnimatePresence>
 
             {showTypingDots && (
-              <div className="flex gap-4 justify-start animate-pulse" aria-label="Assistant is typing">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30 mt-1">
-                  <Bot className="h-5 w-5 text-primary" />
+              <div className="flex gap-5 justify-start" aria-label="Assistant is typing">
+                <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 mt-1">
+                  <Bot className="h-5 w-5 text-blue-400" />
                 </div>
-                <div className="glass-card border border-border/50 rounded-2xl rounded-tl-sm p-4 flex items-center gap-2 h-12">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: "0ms" }}></div>
-                    <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: "150ms" }}></div>
-                    <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: "300ms" }}></div>
+                <div className="glass-card border border-white/5 rounded-[1.5rem] rounded-tl-sm px-6 py-4 flex items-center gap-3 h-14 shadow-2xl bg-white/[0.03]">
+                  <div className="flex space-x-1.5">
+                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: "0ms" }}></div>
+                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: "150ms" }}></div>
+                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: "300ms" }}></div>
                   </div>
                 </div>
               </div>
@@ -462,75 +474,66 @@ const Chat = () => {
       </div>
 
       {/* Input Area */}
-      <div className="absolute bottom-0 w-full bg-gradient-to-t from-background via-background to-transparent pb-6 pt-10 px-4 md:px-8">
+      <div className="absolute bottom-0 w-full bg-gradient-to-t from-[#05070D] via-[#05070D]/95 to-transparent pb-8 pt-16 px-4 md:px-10">
         <div className="max-w-3xl mx-auto relative">
           {/* Generation Controls */}
           {messages.length > 0 && (
-            <div className="absolute -top-12 left-0 right-0 flex justify-center gap-2">
+            <div className="absolute -top-14 left-0 right-0 flex justify-center gap-3">
               {isTyping ? (
-                <Button variant="outline" size="sm" onClick={handleStop} className="bg-background/80 backdrop-blur-md rounded-full text-xs border-border/50">
-                  <Square className="h-3 w-3 mr-2" /> Stop generating
+                <Button variant="outline" size="sm" onClick={handleStop} className="bg-white/5 backdrop-blur-xl rounded-full text-[10px] font-bold tracking-widest uppercase border-white/10 hover:bg-white/10 text-white/60 hover:text-white transition-all h-9 px-5">
+                  <Square className="h-3 w-3 mr-2.5 fill-current" /> Stop Process
                 </Button>
               ) : (
-                <Button variant="outline" size="sm" onClick={handleRegenerate} className="bg-background/80 backdrop-blur-md rounded-full text-xs border-border/50">
-                  <RefreshCcw className="h-3 w-3 mr-2" /> Regenerate response
+                <Button variant="outline" size="sm" onClick={handleRegenerate} className="bg-white/5 backdrop-blur-xl rounded-full text-[10px] font-bold tracking-widest uppercase border-white/10 hover:bg-white/10 text-white/60 hover:text-white transition-all h-9 px-5">
+                  <RefreshCcw className="h-3 w-3 mr-2.5" /> Re-Sync Link
                 </Button>
               )}
             </div>
           )}
 
           {streamError && (
-            <div className="absolute -top-9 left-0 right-0 flex justify-center" role="alert">
-              <span className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-full px-3 py-1">
+            <div className="absolute -top-10 left-0 right-0 flex justify-center" role="alert">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-red-400 bg-red-500/10 border border-red-500/20 rounded-full px-4 py-1.5 backdrop-blur-md">
                 {streamError}
               </span>
             </div>
           )}
 
-          <div className="glass-card rounded-2xl border border-border/50 shadow-2xl p-2.5 flex items-end gap-2 bg-card/85 backdrop-blur-xl">
+          <div className="glass-card rounded-[2rem] border border-white/5 shadow-[0_30px_60px_-12px_rgba(0,0,0,0.6)] p-3 flex items-end gap-3 bg-white/[0.04] backdrop-blur-2xl">
             <button
               type="button"
-              className="p-2.5 text-muted-foreground hover:text-foreground hover:bg-accent/40 rounded-xl transition-colors cursor-pointer"
-              onClick={() => toast("Attachments feature coming soon!", "info")}
+              className="p-3 text-white/20 hover:text-white hover:bg-white/5 rounded-2xl transition-all"
+              onClick={() => toast("Integration module pending", "info")}
             >
-              <Paperclip className="h-4.5 w-4.5" />
+              <Paperclip className="h-5 w-5" />
             </button>
-            <button
-              type="button"
-              className="p-2.5 text-muted-foreground hover:text-foreground hover:bg-accent/40 rounded-xl transition-colors cursor-pointer"
-              onClick={() => toast("Camera/Image input coming soon!", "info")}
-            >
-              <ImageIcon className="h-4.5 w-4.5" />
-            </button>
-
+            
             <textarea
               ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask anything about DSA..."
-              aria-label="Message LeetCode Guidance AI"
-              className="w-full max-h-48 min-h-[40px] bg-transparent resize-none focus:outline-none py-2 text-sm scrollbar-none"
+              placeholder="INITIALIZE NEURAL LINK..."
+              className="w-full max-h-48 min-h-[44px] bg-transparent resize-none focus:outline-none py-3 text-sm text-white placeholder:text-white/10 font-medium tracking-tight custom-scrollbar"
               rows={1}
             />
 
             <Button
               onClick={handleSend}
               disabled={!input.trim() || isTyping || loadingConversation}
-              aria-label="Send message"
               size="icon"
-              className={`flex-shrink-0 rounded-xl transition-all h-9 w-9 ${
+              className={`flex-shrink-0 rounded-2xl transition-all h-11 w-11 ${
                 input.trim() && !isTyping 
-                  ? 'btn-gradient text-white shadow-md' 
-                  : 'bg-muted text-muted-foreground'
+                  ? 'btn-gradient shadow-[0_0_20px_rgba(77,130,255,0.4)]' 
+                  : 'bg-white/5 text-white/10'
               }`}
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-5 w-5" />
             </Button>
           </div>
-          <div className="text-center mt-2.5">
-            <span className="text-[10px] text-muted-foreground/60">
-              LeetCode Guidance AI can make mistakes. Consider verifying important information.
+          <div className="text-center mt-4">
+            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/10">
+              AI Output may contain inaccuracies. Verify critical logic.
             </span>
           </div>
         </div>
@@ -538,5 +541,6 @@ const Chat = () => {
     </div>
   );
 };
+
 
 export default Chat;

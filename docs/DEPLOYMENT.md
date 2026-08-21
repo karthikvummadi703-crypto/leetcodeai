@@ -191,3 +191,76 @@ the recommended production setup: **Railway (backend)** + **Firebase Hosting
 - **Scalability**: if you run more than one Railway container, the in-memory
   rate limiter and conversation store are per-instance. Use the
   Firestore-backed store (already supported) and add a shared limiter.
+
+## 7. Run locally (localhost)
+
+Run the backend and frontend on your machine with **PowerShell**. You still
+need the Firebase project + OpenRouter key from the prerequisites above —
+local mode uses the same services, just with development-friendly defaults
+(open CORS, `/docs` enabled).
+
+### 7.1 Backend (FastAPI, port 8000)
+
+```powershell
+# From the repo root
+cd backend
+
+# One-time setup: virtual environment + dependencies
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1        # if blocked: Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+pip install -r requirements.txt
+
+# One-time setup: backend secrets in backend\.env
+#   OPENROUTER_API_KEY=...
+#   FIREBASE_PROJECT_ID=...
+#   FIREBASE_CLIENT_EMAIL=...
+#   FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+# (APP_ENV / FRONTEND_URL already default to development values.)
+
+# Start the API (auto-reload on code changes)
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Verify:
+
+- Health check: <http://localhost:8000/api/health>
+- Swagger UI: <http://localhost:8000/docs>
+
+> The ChromaDB vector index for RAG is built automatically on first startup
+> (`backend/data/chroma/`). The first run also downloads the ~80 MB embedding
+> model to `~/.cache/chroma` — later starts are fast and offline.
+
+### 7.2 Frontend (Vite dev server, port 5173)
+
+Open a **second** PowerShell window:
+
+```powershell
+# From the repo root
+cd frontend
+
+# One-time setup: dependencies
+npm install
+
+# One-time setup: Firebase web config in frontend\.env.local
+#   VITE_FIREBASE_API_KEY=...
+#   VITE_FIREBASE_AUTH_DOMAIN=<project>.firebaseapp.com
+#   VITE_FIREBASE_PROJECT_ID=<project>
+#   VITE_FIREBASE_STORAGE_BUCKET=<project>.appspot.com
+#   VITE_FIREBASE_MESSAGING_SENDER_ID=...
+#   VITE_FIREBASE_APP_ID=...
+# VITE_API_BASE_URL is optional locally — it defaults to http://localhost:8000/api.
+
+# Start the dev server
+npm run dev
+```
+
+Then open <http://localhost:5173>.
+
+### 7.3 Local checklist
+
+- [ ] Backend healthy at `http://localhost:8000/api/health`.
+- [ ] Frontend loads at `http://localhost:5173` with no CORS errors in the
+      browser console (development mode allows all origins).
+- [ ] Sign-in works (Firebase Auth is still cloud-hosted).
+- [ ] A chat message streams a response (verifies OpenRouter key).
+- [ ] Logs show `Vector index built: N documents` on backend startup.
