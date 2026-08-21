@@ -16,6 +16,7 @@ from app.core import get_logger, register_exception_handlers
 from app.middleware import RequestLoggingMiddleware
 from app.problems import warm_catalog
 from app.rag import warm_knowledge_base
+from app.rag.vector_store import build_index, vector_enabled
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -32,6 +33,8 @@ def create_app() -> FastAPI:
         # (cached for process lifetime).
         warm_knowledge_base()
         warm_catalog()
+        if vector_enabled():
+            build_index()
         log.info(
             "🚀 LeetCode Guidance AI starting — env={env} origins={origins}",
             env=settings.app_env,

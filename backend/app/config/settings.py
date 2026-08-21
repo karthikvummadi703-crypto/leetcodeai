@@ -56,6 +56,12 @@ class Settings(BaseSettings):
         default=60.0, description="Rate-limit window length (seconds)"
     )
 
+    # --- RAG / vector search (ChromaDB, embedded) ---
+    rag_vector_enabled: bool = Field(
+        default=True,
+        description="Enable ChromaDB semantic retrieval for the RAG pipeline",
+    )
+
     # --- LeetCode account integration ---
     leetcode_cache_ttl_seconds: float = Field(
         default=300.0, description="How long to cache a user's LeetCode account data"

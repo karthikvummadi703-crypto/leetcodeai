@@ -1,11 +1,11 @@
 """
-Local retrieval engine (no vector database).
+Retrieval engine.
 
-Searches the in-memory JSON knowledge base using lightweight lexical
-scoring. Each query is tokenised and every document is scored across its
-structured fields — number, title, difficulty, tags, pattern, algorithm,
-keywords and body text — supporting exact, partial, keyword and
-multi-keyword searches in a case-insensitive way.
+Primary path: semantic search over a ChromaDB vector index of the
+knowledge base (see ``app.rag.vector_store``). Fallback path: lightweight
+lexical scoring over the in-memory documents — number, title, difficulty,
+tags, pattern, algorithm, keywords and body text — supporting exact,
+partial, keyword and multi-keyword searches in a case-insensitive way.
 
 Returns the best matching documents ordered by relevance.
 """
@@ -208,29 +208,52 @@ def _format_metadata(doc: DataDocument) -> dict:
     }
 
 
-def retrieve(
+# ─── Semantic retrieval ──────────────────────────────────────────
+
+
+def _semantic_retrieve(query: str, top_k: int) -> list[RetrievedChunk] | None:
+    """
+    Retrieve via the ChromaDB vector index.
+
+    Returns a chunk list, or ``None`` when the vector store is disabled,
+    empty or erroring — signalling the caller to fall back to lexical
+    scoring.
+    """
+    from app.rag.vector_store import semantic_search, vector_enabled
+
+    if not vector_enabled():
+        return None
+
+    hits = semantic_search(query, top_k=top_k)
+    if not hits:
+        return None
+
+    from app.rag.context_builder import format_document
+
+    docs_by_id = {d.doc_id: d for d in get_knowledge_base().documents}
+    chunks: list[RetrievedChunk] = []
+    for doc_id, distance in hits:
+        doc = docs_by_id.get(doc_id)
+        if doc is None:
+            continue
+        chunks.append(
+            RetrievedChunk(
+                content=format_document(doc),
+                source=doc.source,
+                score=round((1.0 - distance) * 100, 2),
+                metadata=_format_metadata(doc),
+            )
+        )
+    return chunks or None
+
+
+def _lexical_retrieve(
     query: str,
-    top_k: int = 5,
-    min_score: float = 10.0,
-) -> RAGResult:
-    """
-    Retrieve the most relevant knowledge-base documents for ``query``.
-
-    Performs exact, partial, keyword and multi-keyword matching, ranks the
-    results by relevance and returns the best ``top_k`` matches. Documents
-    scoring below a relevance threshold are discarded so the caller can fall
-    back to pure-LLM mode when nothing relevant is found.
-    """
-    terms = _query_terms(query)
-
-    if not terms:
-        log.debug("Query produced no search terms", query_len=len(query))
-        return RAGResult(query=query, chunks=[])
-
-    # Threshold scales gently with the number of query terms so a lone
-    # keyword needs a strong (title/tag/pattern) match before it counts.
-    threshold = max(min_score, W_BODY * len(terms))
-
+    terms: list[str],
+    top_k: int,
+    threshold: float,
+) -> tuple[list[RetrievedChunk], int]:
+    """Lexical scoring path. Returns (chunks, total_matches)."""
     scored: list[tuple[float, DataDocument]] = []
     for doc in get_knowledge_base().documents:
         score = _score_doc(doc, terms)
@@ -239,10 +262,12 @@ def retrieve(
 
     if not scored:
         log.info("Retrieval: no matches for query (terms={n})", n=len(terms))
-        return RAGResult(query=query, chunks=[])
+        return [], 0
 
     # Rank by relevance (ties broken by shorter/index order).
     scored.sort(key=lambda item: item[0], reverse=True)
+
+    from app.rag.context_builder import format_document
 
     chunks: list[RetrievedChunk] = []
     for score, doc in scored:
@@ -250,19 +275,24 @@ def retrieve(
             if score < threshold:
                 break
             continue
-        from app.rag.context_builder import format_document
-
-        content = format_document(doc)
         chunks.append(
             RetrievedChunk(
-                content=content,
+                content=format_document(doc),
                 source=doc.source,
                 score=score,
                 metadata=_format_metadata(doc),
             )
         )
+    return chunks, len(scored)
 
-    # Fall back/supplement with search from the full LeetCode catalog of 4,000+ problems.
+
+def _append_catalog_matches(
+    chunks: list[RetrievedChunk],
+    query: str,
+    terms: list[str],
+    top_k: int,
+) -> None:
+    """Fall back/supplement with search from the full LeetCode catalog of 4,000+ problems."""
     from app.problems import get_catalog
 
     catalog = get_catalog()
@@ -309,11 +339,46 @@ def retrieve(
             )
         )
 
+
+# ─── Retrieval ───────────────────────────────────────────────────
+
+
+def retrieve(
+    query: str,
+    top_k: int = 5,
+    min_score: float = 10.0,
+) -> RAGResult:
+    """
+    Retrieve the most relevant knowledge-base documents for ``query``.
+
+    Tries semantic (vector) search first; falls back to lexical scoring
+    when the vector store is unavailable or yields nothing above its
+    similarity threshold. Results are ranked by relevance and truncated to
+    ``top_k``. Documents below the relevance threshold are discarded so the
+    caller can fall back to pure-LLM mode when nothing relevant is found.
+    """
+    terms = _query_terms(query)
+
+    if not terms:
+        log.debug("Query produced no search terms", query_len=len(query))
+        return RAGResult(query=query, chunks=[])
+
+    # Threshold scales gently with the number of query terms so a lone
+    # keyword needs a strong (title/tag/pattern) match before it counts.
+    threshold = max(min_score, W_BODY * len(terms))
+
+    chunks = _semantic_retrieve(query, top_k)
+    if chunks is not None:
+        matched = len(chunks)
+    else:
+        chunks, matched = _lexical_retrieve(query, terms, top_k, threshold)
+
+    _append_catalog_matches(chunks, query, terms, top_k)
+
     log.info(
-        "Retrieval: {matched} matches, kept {kept} for '{q}' (threshold={thr})",
-        matched=len(scored),
+        "Retrieval: {matched} matches, kept {kept} for '{q}'",
+        matched=matched,
         kept=len(chunks),
         q=query[:60],
-        thr=round(threshold, 2),
     )
-    return RAGResult(query=query, chunks=chunks, matched=len(scored))
+    return RAGResult(query=query, chunks=chunks, matched=matched)

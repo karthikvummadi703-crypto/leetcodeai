@@ -10,3 +10,5 @@ import os
 
 os.environ["MEMORY_STORE"] = "memory"
 os.environ["RATE_LIMIT_ENABLED"] = "false"
+# Keep retrieval tests hermetic: no model download, no Chroma persistence.
+os.environ["RAG_VECTOR_ENABLED"] = "false"

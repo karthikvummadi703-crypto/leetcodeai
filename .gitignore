@@ -14,6 +14,7 @@ __pycache__/
 .ruff_cache/
 backend/logs/
 *.log
+backend/data/chroma/
 
 # ── Node (frontend) ──────────────────────────────────────────
 node_modules/
