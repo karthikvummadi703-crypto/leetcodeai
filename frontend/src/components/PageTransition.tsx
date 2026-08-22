@@ -2,16 +2,14 @@ import { motion } from "framer-motion";
 import type { ReactNode } from "react";
 
 const pageVariants = {
-  initial: { opacity: 0, rotateY: -10, scale: 0.96 },
-  animate: { opacity: 1, rotateY: 0, scale: 1 },
-  exit: { opacity: 0, rotateY: 10, scale: 0.96 },
+  initial: { opacity: 0, rotateX: 14, y: 40 },
+  animate: { opacity: 1, rotateX: 0, y: 0 },
+  exit: { opacity: 0, rotateX: -10, y: -24 },
 };
 
 const pageTransition = {
-  type: "spring" as const,
-  stiffness: 260,
-  damping: 26,
-  mass: 0.9,
+  duration: 0.55,
+  ease: [0.16, 1, 0.3, 1] as const,
 };
 
 const PageTransition = ({ children }: { children: ReactNode }) => (
@@ -24,6 +22,7 @@ const PageTransition = ({ children }: { children: ReactNode }) => (
     style={{
       perspective: 1200,
       transformStyle: "preserve-3d",
+      transformOrigin: "top center",
       willChange: "transform, opacity",
     }}
     className="min-h-screen"
