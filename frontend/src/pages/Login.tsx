@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Eye, EyeOff, User, Lock, Target } from "lucide-react";
+import MagicRings from "@/components/MagicRings";
 
 const HexLogo = ({ size = 48 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -72,6 +73,26 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-[#05070D] flex items-center justify-center p-6 relative overflow-hidden">
+      {/* MagicRings background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <MagicRings
+          color="#4D82FF"
+          colorTwo="#7c3aed"
+          ringCount={5}
+          speed={0.7}
+          attenuation={8}
+          lineThickness={1.5}
+          baseRadius={0.5}
+          radiusStep={0.16}
+          scaleRate={0.1}
+          opacity={0.5}
+          noiseAmount={0.05}
+          followMouse={true}
+          mouseInfluence={0.1}
+          parallax={0.03}
+        />
+      </div>
+
       {/* Background Orbs */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] -mr-64 -mt-64" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] -ml-64 -mb-64" />
@@ -224,4 +245,3 @@ const Login = () => {
 };
 
 export default Login;
-
