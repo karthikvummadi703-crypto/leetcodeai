@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import MagicRings from "./MagicRings";
 
 const SnakeTrail = ({ delay = 0, color = "#4D82FF", width = 2, duration = 6 }) => (
   <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1000 1000">
@@ -43,7 +44,7 @@ const IntroSplash = ({ onComplete }: { onComplete: () => void }) => {
       { p: 100, t: 3000 }
     ];
 
-    sequence.forEach((step, i) => {
+    sequence.forEach((step) => {
       setTimeout(() => {
         setPercent(step.p);
         if (step.p === 100) {
@@ -56,6 +57,30 @@ const IntroSplash = ({ onComplete }: { onComplete: () => void }) => {
 
   return (
     <div className="fixed inset-0 z-[200] bg-[#05070D] flex flex-col items-center justify-center overflow-hidden">
+      {/* MagicRings — enlarged radius, palette-matched */}
+      <div className="absolute inset-0 pointer-events-none">
+        <MagicRings
+          color="#4D82FF"
+          colorTwo="#7c3aed"
+          ringCount={6}
+          speed={0.8}
+          attenuation={7}
+          lineThickness={2}
+          baseRadius={0.55}
+          radiusStep={0.18}
+          scaleRate={0.14}
+          opacity={0.85}
+          blur={0}
+          noiseAmount={0.06}
+          ringGap={1.5}
+          fadeIn={0.7}
+          fadeOut={0.5}
+          followMouse={true}
+          mouseInfluence={0.15}
+          parallax={0.04}
+        />
+      </div>
+
       {/* Snake trails */}
       <SnakeTrail delay={0} color="#4D82FF" width={3} duration={7} />
       <SnakeTrail delay={1.5} color="#6F9BFF" width={2} duration={8} />
